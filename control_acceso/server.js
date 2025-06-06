@@ -5,23 +5,34 @@ const bcrypt = require("bcrypt");
 const session = require("express-session");
 const cors = require("cors");
 
-// Importar el enrutador de dispositivos
-const dispositivosRouter = require('./routes/dispositivos');
+// (Asumiendo que tienes este archivo de rutas, si no, puedes eliminar estas dos líneas)
+// const dispositivosRouter = require('./routes/dispositivos'); 
 
 // Crear la aplicación Express
 const app = express();
+
+// --- CONFIGURACIÓN DE MIDDLEWARE ---
 
 // Configurar CORS
 app.use(cors());
 
 // Configurar la sesión
 app.use(session({
-    secret: "clave_secreta",
+    secret: "clave_secreta_super_segura_123", // Es recomendable usar una clave más segura y guardarla en variables de entorno
     resave: false,
-    saveUninitialized: true
+    saveUninitialized: true,
+    cookie: { secure: false } // Poner en `true` si usas HTTPS
 }));
 
-// Conectar a la base de datos MySQL
+// Middleware para analizar datos del formulario y JSON
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+// Servir archivos estáticos (HTML, CSS, imágenes, etc. desde la carpeta 'public')
+app.use(express.static(path.join(__dirname, "public")));
+
+// --- CONEXIÓN A LA BASE DE DATOS ---
+
 let conexion = mysql.createConnection({
     host: "localhost",
     database: "sistema",
@@ -32,227 +43,194 @@ let conexion = mysql.createConnection({
 conexion.connect((err) => {
     if (err) {
         console.error("Error de conexión a la base de datos:", err);
-        process.exit(1); // Detener el servidor si no se puede conectar a la base de datos
+        process.exit(1);
     }
     console.log("Conectado a la base de datos MySQL");
 });
 
-// Middleware para analizar datos del formulario
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
 
-// Servir archivos estáticos (HTML, CSS, imágenes, etc.)
-app.use(express.static(path.join(__dirname, "public")));
+// --- RUTAS DE LA APLICACIÓN ---
 
-// Montar el enrutador de dispositivos
-app.use('/dispositivos', dispositivosRouter);
-
-// **1️⃣ Página de inicio: Registro de usuario**
+// 1. PÁGINA DE INICIO -> Sirve el login (index.html)
 app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+// 2. PÁGINA DE REGISTRO DE USUARIOS -> Sirve la página de registro
+app.get("/registro", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "registroUsuarios.html"));
 });
 
-// **2️⃣ Registro de usuarios**
+// 3. PROCESO DE REGISTRO DE USUARIO (POST)
 app.post("/registro", async function (req, res) {
     const { ced, nom, correo, pass } = req.body;
 
     if (!ced || !nom || !correo || !pass) {
-        return res.json({ success: false, message: "Todos los campos son obligatorios." });
+        return res.status(400).json({ success: false, message: "Todos los campos son obligatorios." });
     }
 
-    let buscar = "SELECT * FROM usuarios WHERE cedula = ?";
-    conexion.query(buscar, [ced], async function (error, row) {
+    let buscar = "SELECT * FROM usuarios WHERE cedula = ? OR correo = ?";
+    conexion.query(buscar, [ced, correo], async function (error, row) {
         if (error) {
-            return res.json({ success: false, message: "Error en la base de datos." });
+            console.error("Error en DB en /registro:", error);
+            return res.status(500).json({ success: false, message: "Error en la base de datos." });
         }
 
         if (row.length > 0) {
-            return res.json({ success: false, message: "El usuario ya existe." });
-        } else {
-            const hashedPassword = await bcrypt.hash(pass, 10); // Encriptar contraseña
-            let registrar = "INSERT INTO usuarios (cedula, nombre, correo, contrasenia) VALUES (?, ?, ?, ?)";
-
-            conexion.query(registrar, [ced, nom, correo, hashedPassword], function (error) {
-                if (error) {
-                    return res.json({ success: false, message: "Error al registrar usuario." });
-                } else {
-                    console.log("Registro exitoso. Redirigiendo a login...");
-                    return res.json({ success: true, redirect: "/login" }); // Redirigir a login
-                }
-            });
-        }
+            return res.status(409).json({ success: false, message: "La cédula o el correo ya existen." });
+        } 
+        
+        const hashedPassword = await bcrypt.hash(pass, 10);
+        let registrar = "INSERT INTO usuarios (cedula, nombre, correo, contrasenia) VALUES (?, ?, ?, ?)";
+        conexion.query(registrar, [ced, nom, correo, hashedPassword], function (error) {
+            if (error) {
+                console.error("Error al registrar usuario:", error);
+                return res.status(500).json({ success: false, message: "Error al registrar usuario." });
+            }
+            console.log("Registro exitoso. Redirigiendo a login...");
+            // Redirige al nuevo login (index.html)
+            return res.json({ success: true, redirect: "/index.html" });
+        });
     });
 });
 
-// **3️⃣ Página de login**
-app.get("/login", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "inicioSesion.html"));
-});
-
-// **4️⃣ Validar login**
+// 4. PROCESO DE LOGIN (POST)
 app.post("/login", function (req, res) {
     const { correo, pass } = req.body;
     if (!correo || !pass) {
-        return res.json({ success: false, message: "Correo y contraseña son obligatorios." });
+        return res.status(400).json({ success: false, message: "Correo y contraseña son obligatorios." });
     }
 
     let buscar = "SELECT * FROM usuarios WHERE correo = ?";
     conexion.query(buscar, [correo], async function (error, row) {
         if (error) {
-            return res.json({ success: false, message: "Error en la base de datos." });
+            console.error("Error en DB en /login:", error);
+            return res.status(500).json({ success: false, message: "Error en la base de datos." });
         }
-
         if (row.length === 0) {
-            return res.json({ success: false, message: "Usuario no encontrado." });
+            return res.status(404).json({ success: false, message: "Usuario no encontrado." });
         }
 
         const usuario = row[0];
         const match = await bcrypt.compare(pass, usuario.contrasenia);
         
         if (!match) {
-            return res.json({ success: false, message: "Contraseña incorrecta." });
+            return res.status(401).json({ success: false, message: "Contraseña incorrecta." });
         }
 
         req.session.user = usuario; // Guardar sesión
         console.log("Inicio de sesión exitoso.");
-        return res.json({ success: true, redirect: "/dashboard" }); // Redirigir a la página principal
+        return res.json({ success: true, redirect: "/dashboard" });
     });
 });
 
-// **5️⃣ Página principal (solo accesible si está autenticado)**
-app.get("/dashboard", (req, res) => {
+// Middleware para proteger rutas que requieren autenticación
+function requireLogin(req, res, next) {
     if (!req.session.user) {
-        return res.redirect("/login");
+        return res.redirect('/index.html'); // Redirige a la página de login
     }
+    next();
+}
+
+// 5. PÁGINA PRINCIPAL (DASHBOARD)
+app.get("/dashboard", requireLogin, (req, res) => {
     res.sendFile(path.join(__dirname, "public", "paginaPrincipal.html"));
 });
 
-// **6️⃣ Cerrar sesión**
+// 6. CERRAR SESIÓN (LOGOUT)
 app.post("/logout", (req, res) => {
     req.session.destroy();
-    res.redirect("/login");
+    res.redirect("/index.html"); // Redirige a la página de login
 });
 
-// **7️⃣ Registro de dispositivos por el usuario**
-app.get("/dispositivos", (req, res) => {
-    if (!req.session.user) {
-        return res.redirect("/login"); // Verifica si el usuario está logeado
-    }
+// 7. PÁGINAS Y RUTAS DE DISPOSITIVOS
+app.get("/dispositivos", requireLogin, (req, res) => {
     res.sendFile(path.join(__dirname, "public", "registroDispositivos.html"));
 });
-app.post("/registrarDispositivo", function (req, res) {
+
+app.post("/registrarDispositivo", requireLogin, function (req, res) {
     const { tipo, marca, modelo, direccion_ip, puerto, usuario, contrasena, ubicacion } = req.body;
-
-    // Validar campos obligatorios
     if (!tipo || !marca || !modelo || !ubicacion) {
-        return res.status(400).json({
-            success: false,
-            message: "Los campos tipo, marca, modelo y ubicación son obligatorios.",
-        });
+        return res.status(400).json({ success: false, message: "Los campos tipo, marca, modelo y ubicación son obligatorios." });
     }
-
-    // Insertar en la base de datos
-    const query = `
-        INSERT INTO dispositivos (tipo, marca, modelo, direccion_ip, puerto, usuario, contrasena, ubicacion)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `;
+    const query = "INSERT INTO dispositivos (tipo, marca, modelo, direccion_ip, puerto, usuario, contrasena, ubicacion) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     const parametros = [tipo, marca, modelo, direccion_ip || null, puerto || null, usuario || null, contrasena || null, ubicacion];
-
-    conexion.query(query, parametros, (error, resultados) => {
+    conexion.query(query, parametros, (error) => {
         if (error) {
             console.error("Error al registrar el dispositivo:", error);
-            return res.status(500).json({
-                success: false,
-                message: "Error al registrar el dispositivo en la base de datos.",
-            });
+            return res.status(500).json({ success: false, message: "Error al registrar el dispositivo." });
         }
-
-        // Éxito
-        res.json({
-            success: true,
-            message: "Dispositivo registrado correctamente.",
-        });
+        res.json({ success: true, message: "Dispositivo registrado correctamente." });
     });
 });
 
-// **8️⃣ Ruta para registrar un servicio por el usuario**
-app.get("/servicios", (req, res) => {
-    if (!req.session.user) {
-        return res.redirect("/login"); // Verifica si el usuario está logeado
-    }
+// 8. PÁGINAS Y RUTAS DE SERVICIOS
+app.get("/servicios", requireLogin, (req, res) => {
     res.sendFile(path.join(__dirname, "public", "registroServicios.html"));
 });
 
-app.post("/registrarServicio", function (req, res) {
+app.post("/registrarServicio", requireLogin, function (req, res) {
     const { nombre, descripcion, estado } = req.body;
-
     let query = "INSERT INTO servicios (nombre, descripcion, estado) VALUES (?, ?, ?)";
     conexion.query(query, [nombre, descripcion, estado], function(error) {
         if (error) {
-            return res.json({ success: false, message: "Error al registrar el servicio" });
+            console.error("Error al registrar servicio:", error);
+            return res.status(500).json({ success: false, message: "Error al registrar el servicio" });
         }
-        console.log("Servicio registrado con éxito");
         res.json({ success: true, message: "Servicio registrado con éxito" });
     });
 });
 
-// **9️⃣ Ruta para actualizar datos**
-app.post("/actualizar", (req, res) => {
+
+// 9. RUTA PARA ACTUALIZAR DATOS
+app.post("/actualizar", requireLogin, (req, res) => {
     const { entityType, entityId, updateField, newValue } = req.body;
+    if (!entityType || !entityId || !updateField || newValue === undefined) {
+        return res.status(400).json({ success: false, message: "Todos los campos son obligatorios." });
+    }
+    
+    // Evitar inyección SQL validando el nombre de la tabla y campo
+    const allowedTables = { 'usuario': 'usuarios', 'dispositivo': 'dispositivos', 'servicio': 'servicios' };
+    const allowedFields = { /* Aquí deberías listar los campos permitidos por tabla */ };
+    
+    if (!allowedTables[entityType]) {
+        return res.status(400).json({ success: false, message: "Tipo de entidad no válido." });
+    }
+    const table = allowedTables[entityType];
 
-    if (!entityType || !entityId || !updateField || !newValue) {
-        return res.json({ success: false, message: "Todos los campos son obligatorios." });
+    // Esta es una validación simple, una más robusta es recomendada.
+    if (!/^[a-zA-Z0-9_]+$/.test(updateField)) {
+        return res.status(400).json({ success: false, message: "Campo a actualizar no válido."});
     }
 
-    let query;
-    switch (entityType) {
-        case 'usuario':
-            query = `UPDATE usuarios SET ${updateField} = ? WHERE id = ?`;
-            break;
-        case 'dispositivo':
-            query = `UPDATE dispositivos SET ${updateField} = ? WHERE id = ?`;
-            break;
-        case 'servicio':
-            query = `UPDATE servicios SET ${updateField} = ? WHERE id = ?`;
-            break;
-        default:
-            return res.json({ success: false, message: "Tipo de entidad no válido." });
-    }
-
-    conexion.query(query, [newValue, entityId], (error, results) => {
+    const query = `UPDATE ?? SET ?? = ? WHERE id = ?`; // Usar '??' para identificadores
+    conexion.query(query, [table, updateField, newValue, entityId], (error, results) => {
         if (error) {
             console.error("Error al actualizar:", error);
-            return res.json({ success: false, message: "Error en la base de datos." });
+            return res.status(500).json({ success: false, message: "Error en la base de datos." });
         }
         if (results.affectedRows === 0) {
-            return res.json({ success: false, message: "No se encontró la entidad con el ID proporcionado." });
+            return res.status(404).json({ success: false, message: "No se encontró la entidad con el ID proporcionado." });
         }
         return res.json({ success: true, message: "Datos actualizados con éxito." });
     });
 });
 
-// **🔟 Ruta para eliminar datos**
-app.post('/eliminar', (req, res) => {
-    console.log(req.body); // Verifica los datos recibidos
+// 10. RUTA PARA ELIMINAR DATOS
+app.post('/eliminar', requireLogin, (req, res) => {
     const { deleteEntityType, deleteEntityId } = req.body;
-
     if (!deleteEntityType || !deleteEntityId) {
         return res.status(400).json({ success: false, message: "Todos los campos son obligatorios." });
     }
 
-    let query;
-    switch (deleteEntityType) {
-        case 'dispositivo':
-            query = `DELETE FROM dispositivos WHERE id = ?`;
-            break;
-        case 'servicio':
-            query = `DELETE FROM servicios WHERE id = ?`;
-            break;
-        default:
-            return res.status(400).json({ success: false, message: "Tipo de entidad no válido." });
+    const allowedTables = { 'dispositivo': 'dispositivos', 'servicio': 'servicios' };
+    if (!allowedTables[deleteEntityType]) {
+        return res.status(400).json({ success: false, message: "Tipo de entidad no válido." });
     }
+    const table = allowedTables[deleteEntityType];
 
-    conexion.query(query, [deleteEntityId], (error, results) => {
+    const query = `DELETE FROM ?? WHERE id = ?`;
+    conexion.query(query, [table, deleteEntityId], (error, results) => {
         if (error) {
             console.error("Error al eliminar:", error);
             return res.status(500).json({ success: false, message: "Error en la base de datos." });
@@ -262,10 +240,11 @@ app.post('/eliminar', (req, res) => {
         }
         return res.json({ success: true, message: "Datos eliminados con éxito." });
     });
-
 });
 
-// Iniciar el servidor en el puerto 3000
-app.listen(3000, function () {
-    console.log("Servidor corriendo en http://localhost:3000");
+
+// --- INICIAR EL SERVIDOR ---
+const PORT = 3000;
+app.listen(PORT, function () {
+    console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });

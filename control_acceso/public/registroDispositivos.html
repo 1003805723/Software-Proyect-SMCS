@@ -557,7 +557,7 @@
         // Efecto ripple para botones
         document.querySelectorAll('button').forEach(button => {
             button.addEventListener('click', function(e) {
-                e.preventDefault();
+                // Se elimina e.preventDefault() para permitir el envío del formulario.
                 let x = e.clientX - e.target.getBoundingClientRect().left;
                 let y = e.clientY - e.target.getBoundingClientRect().top;
                 

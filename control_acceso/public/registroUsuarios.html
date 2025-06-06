@@ -115,10 +115,10 @@
         }
 
         /* Animaciones escalonadas para los inputs */
-        .input-container:nth-child(1) { animation-delay: 0.3s; }
-        .input-container:nth-child(2) { animation-delay: 0.4s; }
-        .input-container:nth-child(3) { animation-delay: 0.5s; }
-        .input-container:nth-child(4) { animation-delay: 0.6s; }
+        .input-container:nth-of-type(1) { animation-delay: 0.3s; }
+        .input-container:nth-of-type(2) { animation-delay: 0.4s; }
+        .input-container:nth-of-type(3) { animation-delay: 0.5s; }
+        .input-container:nth-of-type(4) { animation-delay: 0.6s; }
 
         .input-container input {
             width: 100%;
@@ -137,21 +137,37 @@
             transform: scale(1.01);
         }
 
-        .input-container i {
+        .input-container .fa-id-card,
+        .input-container .fa-user,
+        .input-container .fa-envelope {
             position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+            font-size: 1rem;
+        }
+        
+        .input-container .toggle-password {
+             position: absolute;
             right: 15px;
             top: 50%;
             transform: translateY(-50%);
             cursor: pointer;
             color: #3498db;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             transition: all 0.3s ease;
         }
 
-        .input-container i:hover {
+        .input-container .toggle-password:hover {
             color: #2980b9;
             transform: translateY(-50%) scale(1.2);
         }
+        
+        .input-container input:focus + i {
+            color: #3498db;
+        }
+
 
         .error-message {
             color: #e74c3c;
@@ -252,26 +268,6 @@
             transform: translateY(-2px);
         }
 
-        /* Efecto de onda en los inputs */
-        .input-wave {
-            position: relative;
-            overflow: hidden;
-        }
-
-        .input-wave-effect {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(52, 152, 219, 0.2);
-            transform: scale(0);
-            border-radius: 50%;
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        /* Efecto de carga */
         .loading-spinner {
             display: inline-block;
             width: 20px;
@@ -288,7 +284,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Efecto de éxito */
         .success-animation {
             animation: pulse 0.5s ease;
         }
@@ -299,7 +294,6 @@
             100% { transform: scale(1); }
         }
 
-        /* Confetti */
         .confetti {
             position: absolute;
             width: 10px;
@@ -309,7 +303,6 @@
             pointer-events: none;
         }
 
-        /* Media queries para pantallas más grandes */
         @media (min-width: 768px) {
             .register-container {
                 padding: 30px;
@@ -330,7 +323,6 @@
             }
         }
 
-        /* Media Query para pantallas muy pequeñas */
         @media (max-width: 360px) {
             body {
                 padding: 10px;
@@ -354,7 +346,6 @@
             }
         }
 
-        /* Ajustes para iOS */
         @supports (-webkit-touch-callout: none) {
             .input-container input, button {
                 padding: 12px 40px 12px 15px;
@@ -368,7 +359,6 @@
             }
         }
 
-        /* Mejoras de accesibilidad */
         input:focus, button:focus {
             outline: 2px solid #3498db;
             outline-offset: 2px;
@@ -382,24 +372,21 @@
         <h2>Registro de Usuario</h2>
 
         <form id="registroForm">
-            <div class="input-container input-wave">
+            <div class="input-container">
                 <input type="text" id="cedula" name="ced" placeholder="Cédula" required>
-                <i>🆔</i>
             </div>
 
-            <div class="input-container input-wave">
+            <div class="input-container">
                 <input type="text" id="nombre" name="nom" placeholder="Nombre completo" required>
-                <i>👤</i>
             </div>
 
-            <div class="input-container input-wave">
+            <div class="input-container">
                 <input type="email" id="correo" name="correo" placeholder="Correo electrónico" required>
-                <i>📧</i>
             </div>
 
-            <div class="input-container input-wave">
+            <div class="input-container">
                 <input type="password" id="password" name="pass" placeholder="Contraseña" required>
-                <i class="toggle-password" onclick="togglePassword()">👁️</i>
+                <i class="fas fa-eye toggle-password" onclick="togglePassword(this)"></i>
             </div>
 
             <p id="error-message" class="error-message"></p>
@@ -409,52 +396,21 @@
             </button>
         </form>
 
-        <a href="/login" class="login-link">¿Ya tienes cuenta? Inicia sesión aquí</a>
+        <a href="/index.html" class="login-link">¿Ya tienes cuenta? Inicia sesión aquí</a>
     </div>
 
     <script>
-        // Animación de entrada para los elementos
-        document.addEventListener('DOMContentLoaded', () => {
-            // Agregar clase de onda a los inputs al hacer clic
-            document.querySelectorAll('.input-wave input').forEach(input => {
-                input.addEventListener('click', function(e) {
-                    const wave = document.createElement('span');
-                    wave.className = 'input-wave-effect';
-                    this.parentNode.appendChild(wave);
-                    
-                    const rect = this.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
-                    
-                    wave.style.left = x + 'px';
-                    wave.style.top = y + 'px';
-                    wave.style.transform = 'scale(20)';
-                    wave.style.opacity = '0';
-                    wave.style.transition = 'transform 0.6s ease-out, opacity 0.6s ease-out';
-                    
-                    setTimeout(() => wave.remove(), 600);
-                });
-            });
-        });
-
-        function togglePassword() {
+        function togglePassword(toggleIcon) {
             const passwordInput = document.getElementById("password");
-            const toggleIcon = document.querySelector(".toggle-password");
             
             if (passwordInput.type === "password") {
                 passwordInput.type = "text";
-                toggleIcon.textContent = "👁️";
-                toggleIcon.style.transform = "translateY(-50%) scale(1.2)";
-                setTimeout(() => {
-                    toggleIcon.style.transform = "translateY(-50%) scale(1)";
-                }, 200);
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
             } else {
                 passwordInput.type = "password";
-                toggleIcon.textContent = "👁️";
-                toggleIcon.style.transform = "translateY(-50%) scale(1.2)";
-                setTimeout(() => {
-                    toggleIcon.style.transform = "translateY(-50%) scale(1)";
-                }, 200);
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
             }
         }
 
@@ -469,17 +425,14 @@
             const submitBtn = document.getElementById("submitBtn");
             const loadingSpinner = document.getElementById("loadingSpinner");
 
-            // Mostrar spinner de carga
             submitBtn.disabled = true;
             loadingSpinner.style.display = "inline-block";
             
-            // Animación de pulsación del botón
             submitBtn.style.transform = "scale(0.98)";
             setTimeout(() => {
                 submitBtn.style.transform = "scale(1)";
             }, 150);
 
-            // Validación mejorada con animaciones
             if (!cedula || cedula.length < 5) {
                 showError("La cédula debe tener al menos 5 caracteres.");
                 return;
@@ -501,7 +454,6 @@
             }
 
             try {
-                // Simular un pequeño retraso para mostrar la animación de carga
                 await new Promise(resolve => setTimeout(resolve, 800));
                 
                 const formData = new FormData(this);
@@ -513,16 +465,13 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    // Animación de éxito
                     const container = document.querySelector('.register-container');
                     container.classList.add('success-animation');
                     
-                    // Crear efecto de confeti
                     createConfetti();
                     
-                    // Redirigir después de la animación
                     setTimeout(() => {
-                        window.location.href = result.redirect;
+                        window.location.href = result.redirect || '/index.html';
                     }, 1000);
                 } else {
                     showError(result.message || "Error en el registro. Intente nuevamente.");
@@ -541,7 +490,6 @@
                 loadingSpinner.style.display = "none";
                 submitBtn.disabled = false;
                 
-                // Animación de error
                 const container = document.querySelector('.register-container');
                 container.style.animation = "none";
                 void container.offsetWidth; // Trigger reflow
@@ -549,7 +497,6 @@
             }
         });
 
-        // Crear efecto de confeti
         function createConfetti() {
             const colors = ['#3498db', '#2ecc71', '#e74c3c', '#f1c40f', '#9b59b6'];
             const container = document.querySelector('.register-container');
@@ -562,7 +509,6 @@
                 confetti.style.top = '-10px';
                 container.appendChild(confetti);
                 
-                // Animación del confeti
                 const animation = confetti.animate([
                     { 
                         transform: 'translateY(0) rotate(0deg)',
@@ -581,26 +527,9 @@
                     easing: 'cubic-bezier(0.1, 0.8, 0.3, 1)'
                 });
                 
-                // Eliminar el confeti después de la animación
                 animation.onfinish = () => confetti.remove();
             }
         }
-
-        // Mejorar experiencia en móviles con teclado
-        document.querySelectorAll("input").forEach(input => {
-            input.addEventListener("focus", function() {
-                window.scrollTo({
-                    top: this.offsetTop - 100,
-                    behavior: 'smooth'
-                });
-                
-                // Efecto de resaltado
-                this.style.boxShadow = '0 0 0 2px rgba(52, 152, 219, 0.5)';
-                setTimeout(() => {
-                    this.style.boxShadow = '';
-                }, 1000);
-            });
-        });
     </script>
 
 </body>
