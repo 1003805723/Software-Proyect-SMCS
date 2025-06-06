@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Registro de Usuarios - Monitoreo y Control</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Reset y estilos base mobile-first */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-image: url('fondo.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            animation: fadeIn 1s ease-out;
+            overflow-x: hidden;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .register-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+            background-color: rgba(255, 255, 255, 0.95);
+            text-align: center;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: translateY(30px) scale(0.98);
+            opacity: 0;
+            animation: slideUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards 0.2s;
+        }
+
+        @keyframes slideUp {
+            to {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .register-container:hover {
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .register-container img {
+            width: 70px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            transform: rotate(0deg) scale(1);
+        }
+
+        .register-container img:hover {
+            transform: rotate(5deg) scale(1.1);
+        }
+
+        h2 {
+            color: #2c3e50;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            position: relative;
+            display: inline-block;
+        }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 3px;
+            background: #3498db;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+
+        h2:hover::after {
+            width: 80px;
+            background: #2980b9;
+        }
+
+        .input-container {
+            position: relative;
+            margin-bottom: 15px;
+            width: 100%;
+            transform: translateX(-20px);
+            opacity: 0;
+            animation: slideIn 0.5s ease forwards;
+        }
+
+        @keyframes slideIn {
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Animaciones escalonadas para los inputs */
+        .input-container:nth-child(1) { animation-delay: 0.3s; }
+        .input-container:nth-child(2) { animation-delay: 0.4s; }
+        .input-container:nth-child(3) { animation-delay: 0.5s; }
+        .input-container:nth-child(4) { animation-delay: 0.6s; }
+
+        .input-container input {
+            width: 100%;
+            padding: 12px 40px 12px 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: #f9f9f9;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .input-container input:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0px 0px 8px rgba(52, 152, 219, 0.3);
+            transform: scale(1.01);
+        }
+
+        .input-container i {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #3498db;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-container i:hover {
+            color: #2980b9;
+            transform: translateY(-50%) scale(1.2);
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.9rem;
+            display: none;
+            margin-top: 10px;
+            text-align: left;
+            padding-left: 5px;
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97);
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translateX(-1px); }
+            20%, 80% { transform: translateX(2px); }
+            30%, 50%, 70% { transform: translateX(-3px); }
+            40%, 60% { transform: translateX(3px); }
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            overflow: hidden;
+            transform: translateY(20px);
+            opacity: 0;
+            animation: fadeInUp 0.5s ease forwards 0.8s;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(41, 128, 185, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+
+        button:focus:not(:active)::after {
+            animation: ripple 0.6s ease-out;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(20, 20);
+                opacity: 0;
+            }
+        }
+
+        .login-link {
+            display: block;
+            margin-top: 15px;
+            text-decoration: none;
+            color: #3498db;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            transform: translateY(20px);
+            opacity: 0;
+            animation: fadeInUp 0.5s ease forwards 0.9s;
+        }
+
+        .login-link:hover {
+            color: #2980b9;
+            text-decoration: underline;
+            transform: translateY(-2px);
+        }
+
+        /* Efecto de onda en los inputs */
+        .input-wave {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .input-wave-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(52, 152, 219, 0.2);
+            transform: scale(0);
+            border-radius: 50%;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Efecto de carga */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Efecto de éxito */
+        .success-animation {
+            animation: pulse 0.5s ease;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+
+        /* Confetti */
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        /* Media queries para pantallas más grandes */
+        @media (min-width: 768px) {
+            .register-container {
+                padding: 30px;
+            }
+            
+            h2 {
+                font-size: 1.8rem;
+            }
+            
+            .input-container input {
+                padding: 14px 45px 14px 15px;
+                font-size: 1.1rem;
+            }
+            
+            button {
+                padding: 16px;
+                font-size: 1.1rem;
+            }
+        }
+
+        /* Media Query para pantallas muy pequeñas */
+        @media (max-width: 360px) {
+            body {
+                padding: 10px;
+            }
+            
+            .register-container {
+                padding: 20px;
+            }
+            
+            h2 {
+                font-size: 1.3rem;
+            }
+            
+            .input-container input {
+                padding: 10px 35px 10px 12px;
+                font-size: 0.9rem;
+            }
+            
+            button {
+                padding: 12px;
+            }
+        }
+
+        /* Ajustes para iOS */
+        @supports (-webkit-touch-callout: none) {
+            .input-container input, button {
+                padding: 12px 40px 12px 15px;
+                -webkit-appearance: none;
+                appearance: none;
+                border-radius: 8px;
+            }
+            
+            .input-container i {
+                right: 15px;
+            }
+        }
+
+        /* Mejoras de accesibilidad */
+        input:focus, button:focus {
+            outline: 2px solid #3498db;
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="register-container">
+        <img src="logo.png" alt="Logo" loading="lazy">
+        <h2>Registro de Usuario</h2>
+
+        <form id="registroForm">
+            <div class="input-container input-wave">
+                <input type="text" id="cedula" name="ced" placeholder="Cédula" required>
+                <i>🆔</i>
+            </div>
+
+            <div class="input-container input-wave">
+                <input type="text" id="nombre" name="nom" placeholder="Nombre completo" required>
+                <i>👤</i>
+            </div>
+
+            <div class="input-container input-wave">
+                <input type="email" id="correo" name="correo" placeholder="Correo electrónico" required>
+                <i>📧</i>
+            </div>
+
+            <div class="input-container input-wave">
+                <input type="password" id="password" name="pass" placeholder="Contraseña" required>
+                <i class="toggle-password" onclick="togglePassword()">👁️</i>
+            </div>
+
+            <p id="error-message" class="error-message"></p>
+
+            <button type="submit" id="submitBtn">
+                Registrarse <span id="loadingSpinner" class="loading-spinner" style="display: none;"></span>
+            </button>
+        </form>
+
+        <a href="/login" class="login-link">¿Ya tienes cuenta? Inicia sesión aquí</a>
+    </div>
+
+    <script>
+        // Animación de entrada para los elementos
+        document.addEventListener('DOMContentLoaded', () => {
+            // Agregar clase de onda a los inputs al hacer clic
+            document.querySelectorAll('.input-wave input').forEach(input => {
+                input.addEventListener('click', function(e) {
+                    const wave = document.createElement('span');
+                    wave.className = 'input-wave-effect';
+                    this.parentNode.appendChild(wave);
+                    
+                    const rect = this.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    wave.style.left = x + 'px';
+                    wave.style.top = y + 'px';
+                    wave.style.transform = 'scale(20)';
+                    wave.style.opacity = '0';
+                    wave.style.transition = 'transform 0.6s ease-out, opacity 0.6s ease-out';
+                    
+                    setTimeout(() => wave.remove(), 600);
+                });
+            });
+        });
+
+        function togglePassword() {
+            const passwordInput = document.getElementById("password");
+            const toggleIcon = document.querySelector(".toggle-password");
+            
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                toggleIcon.textContent = "👁️";
+                toggleIcon.style.transform = "translateY(-50%) scale(1.2)";
+                setTimeout(() => {
+                    toggleIcon.style.transform = "translateY(-50%) scale(1)";
+                }, 200);
+            } else {
+                passwordInput.type = "password";
+                toggleIcon.textContent = "👁️";
+                toggleIcon.style.transform = "translateY(-50%) scale(1.2)";
+                setTimeout(() => {
+                    toggleIcon.style.transform = "translateY(-50%) scale(1)";
+                }, 200);
+            }
+        }
+
+        document.getElementById("registroForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            const cedula = document.getElementById("cedula").value;
+            const nombre = document.getElementById("nombre").value;
+            const correo = document.getElementById("correo").value;
+            const password = document.getElementById("password").value;
+            const errorMessage = document.getElementById("error-message");
+            const submitBtn = document.getElementById("submitBtn");
+            const loadingSpinner = document.getElementById("loadingSpinner");
+
+            // Mostrar spinner de carga
+            submitBtn.disabled = true;
+            loadingSpinner.style.display = "inline-block";
+            
+            // Animación de pulsación del botón
+            submitBtn.style.transform = "scale(0.98)";
+            setTimeout(() => {
+                submitBtn.style.transform = "scale(1)";
+            }, 150);
+
+            // Validación mejorada con animaciones
+            if (!cedula || cedula.length < 5) {
+                showError("La cédula debe tener al menos 5 caracteres.");
+                return;
+            }
+
+            if (!nombre || nombre.length < 3) {
+                showError("El nombre debe tener al menos 3 caracteres.");
+                return;
+            }
+
+            if (!correo.includes("@") || !correo.includes(".")) {
+                showError("Por favor ingrese un correo electrónico válido.");
+                return;
+            }
+
+            if (!password || password.length < 6) {
+                showError("La contraseña debe tener al menos 6 caracteres.");
+                return;
+            }
+
+            try {
+                // Simular un pequeño retraso para mostrar la animación de carga
+                await new Promise(resolve => setTimeout(resolve, 800));
+                
+                const formData = new FormData(this);
+                const response = await fetch("/registro", {
+                    method: "POST",
+                    body: new URLSearchParams(formData)
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Animación de éxito
+                    const container = document.querySelector('.register-container');
+                    container.classList.add('success-animation');
+                    
+                    // Crear efecto de confeti
+                    createConfetti();
+                    
+                    // Redirigir después de la animación
+                    setTimeout(() => {
+                        window.location.href = result.redirect;
+                    }, 1000);
+                } else {
+                    showError(result.message || "Error en el registro. Intente nuevamente.");
+                }
+            } catch (error) {
+                showError("Error de conexión. Intente nuevamente.");
+                console.error("Error:", error);
+            } finally {
+                loadingSpinner.style.display = "none";
+                submitBtn.disabled = false;
+            }
+
+            function showError(message) {
+                errorMessage.innerText = message;
+                errorMessage.style.display = "block";
+                loadingSpinner.style.display = "none";
+                submitBtn.disabled = false;
+                
+                // Animación de error
+                const container = document.querySelector('.register-container');
+                container.style.animation = "none";
+                void container.offsetWidth; // Trigger reflow
+                container.style.animation = "shake 0.5s cubic-bezier(.36,.07,.19,.97)";
+            }
+        });
+
+        // Crear efecto de confeti
+        function createConfetti() {
+            const colors = ['#3498db', '#2ecc71', '#e74c3c', '#f1c40f', '#9b59b6'];
+            const container = document.querySelector('.register-container');
+            
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.top = '-10px';
+                container.appendChild(confetti);
+                
+                // Animación del confeti
+                const animation = confetti.animate([
+                    { 
+                        transform: 'translateY(0) rotate(0deg)',
+                        opacity: 0 
+                    },
+                    { 
+                        transform: 'translateY(' + (Math.random() * 300 + 100) + 'px) rotate(' + (Math.random() * 360) + 'deg)',
+                        opacity: 1 
+                    },
+                    { 
+                        transform: 'translateY(' + (Math.random() * 300 + 400) + 'px) rotate(' + (Math.random() * 720) + 'deg)',
+                        opacity: 0 
+                    }
+                ], {
+                    duration: 2000 + Math.random() * 2000,
+                    easing: 'cubic-bezier(0.1, 0.8, 0.3, 1)'
+                });
+                
+                // Eliminar el confeti después de la animación
+                animation.onfinish = () => confetti.remove();
+            }
+        }
+
+        // Mejorar experiencia en móviles con teclado
+        document.querySelectorAll("input").forEach(input => {
+            input.addEventListener("focus", function() {
+                window.scrollTo({
+                    top: this.offsetTop - 100,
+                    behavior: 'smooth'
+                });
+                
+                // Efecto de resaltado
+                this.style.boxShadow = '0 0 0 2px rgba(52, 152, 219, 0.5)';
+                setTimeout(() => {
+                    this.style.boxShadow = '';
+                }, 1000);
+            });
+        });
+    </script>
+
+</body>
+</html>

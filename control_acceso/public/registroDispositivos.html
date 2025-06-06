@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Registro de Dispositivos</title>
+    <style>
+        /* Reset y estilos base mobile-first */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background-image: url('fondo.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            perspective: 1000px;
+        }
+
+        /* Animaciones */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.97);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+            margin: 20px 0;
+            transform-style: preserve-3d;
+            transition: all 0.5s ease;
+            animation: fadeIn 0.8s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                rgba(0, 123, 255, 0.1),
+                rgba(0, 123, 255, 0.05),
+                transparent
+            );
+            transform: rotate(30deg);
+            z-index: 0;
+        }
+
+        .container:hover {
+            transform: translateY(-5px) rotateX(2deg) rotateY(2deg);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+        }
+
+        .container img {
+            width: 70px;
+            margin-bottom: 15px;
+            transition: all 0.5s ease;
+            filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.1));
+            animation: float 3s ease-in-out infinite;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            position: relative;
+            display: inline-block;
+        }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: #007BFF;
+            transition: width 0.3s ease;
+        }
+
+        .container:hover h2::after {
+            width: 100%;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .form-group:hover {
+            transform: translateX(5px);
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin: 15px 0 8px;
+            text-align: left;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            color: #444;
+        }
+
+        .form-group:hover label {
+            color: #007BFF;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background-color: rgba(255, 255, 255, 0.9);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        input:focus, select:focus {
+            border-color: #007BFF;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+            outline: none;
+            transform: translateY(-2px);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 25px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: all 0.5s ease;
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        button:hover {
+            background-color: #0069d9;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 123, 255, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .link {
+            display: block;
+            margin-top: 20px;
+            text-decoration: none;
+            color: #007BFF;
+            font-size: 0.95rem;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background-color: #007BFF;
+            transition: width 0.3s ease;
+        }
+
+        .link:hover {
+            text-decoration: none;
+            color: #0056b3;
+        }
+
+        .link:hover::after {
+            width: 100%;
+        }
+
+        /* Efecto de icono flotante para campos */
+        .input-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #007BFF;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        input:focus ~ .input-icon, select:focus ~ .input-icon {
+            opacity: 1;
+            transform: translateY(-50%) scale(1.2);
+        }
+
+        /* Media queries para pantallas más grandes */
+        @media (min-width: 768px) {
+            .container {
+                padding: 30px;
+            }
+            
+            h2 {
+                font-size: 1.8rem;
+                margin-bottom: 25px;
+            }
+            
+            input, select {
+                padding: 14px 18px;
+            }
+            
+            button {
+                padding: 16px;
+                font-size: 1.1rem;
+            }
+        }
+
+        /* Media Query para pantallas muy pequeñas */
+        @media (max-width: 360px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            h2 {
+                font-size: 1.3rem;
+            }
+            
+            input, select {
+                padding: 10px 12px;
+                font-size: 0.9rem;
+            }
+            
+            button {
+                padding: 12px;
+            }
+        }
+
+        /* Ajustes para iOS */
+        @supports (-webkit-touch-callout: none) {
+            input, select, button {
+                padding: 12px 15px;
+                -webkit-appearance: none;
+                appearance: none;
+                border-radius: 5px;
+            }
+        }
+
+        /* Ajuste específico para el espacio entre contraseña y ubicación */
+        label[for="ubicacion"] {
+            margin-top: 8px;
+        }
+
+        /* Efecto de validación */
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.8rem;
+            text-align: left;
+            margin-top: -5px;
+            margin-bottom: 10px;
+            display: none;
+            animation: shake 0.5s ease;
+        }
+
+        .input-error {
+            border-color: #e74c3c;
+            animation: shake 0.5s ease;
+        }
+
+        .input-success {
+            border-color: #2ecc71;
+        }
+
+        /* Efecto de carga */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <img src="logo.png" alt="Logo" loading="lazy">
+        <h2>Registro de Dispositivos</h2>
+
+        <form id="deviceForm" action="/registrarDispositivo" method="POST">
+            <div class="form-group">
+                <label for="tipo">Tipo de dispositivo:</label>
+                <select id="tipo" name="tipo" required>
+                    <option value="" disabled selected>Seleccione un tipo</option>
+                    <option value="Camara IP">Cámara IP</option>
+                    <option value="Camara Analoga">Cámara Analógica</option>
+                    <option value="NVR">NVR (Network Video Recorder)</option>
+                    <option value="DVR">DVR (Digital Video Recorder)</option>
+                    <option value="Alarma">Alarma</option>
+                    <option value="Sensor de Movimiento">Sensor de Movimiento</option>
+                </select>
+                <span class="input-icon">▼</span>
+                <div id="tipo-error" class="error-message"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="marca">Marca:</label>
+                <input type="text" id="marca" name="marca" required placeholder="Ej. Hikvision, Dahua">
+                <span class="input-icon">🏷️</span>
+                <div id="marca-error" class="error-message"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="modelo">Modelo:</label>
+                <input type="text" id="modelo" name="modelo" required placeholder="Ej. DS-2CD2143G0-I">
+                <span class="input-icon">🔧</span>
+                <div id="modelo-error" class="error-message"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="direccion_ip">Dirección IP (opcional):</label>
+                <input type="text" id="direccion_ip" name="direccion_ip" pattern="\b(?:\d{1,3}\.){3}\d{1,3}\b" placeholder="Ej. 192.168.1.100">
+                <span class="input-icon">🌐</span>
+                <div id="ip-error" class="error-message"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="puerto">Puerto (opcional):</label>
+                <input type="number" id="puerto" name="puerto" min="1" max="65535" placeholder="Ej. 8080">
+                <span class="input-icon">🔌</span>
+                <div id="puerto-error" class="error-message"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="usuario">Usuario de acceso (opcional):</label>
+                <input type="text" id="usuario" name="usuario" placeholder="Usuario del dispositivo">
+                <span class="input-icon">👤</span>
+            </div>
+
+            <div class="form-group">
+                <label for="contrasena">Contraseña (opcional):</label>
+                <input type="password" id="contrasena" name="contrasena" placeholder="********">
+                <span class="input-icon">🔒</span>
+            </div>
+
+            <div class="form-group">
+                <label for="ubicacion">Ubicación del dispositivo:</label>
+                <input type="text" id="ubicacion" name="ubicacion" required placeholder="Ej. Oficina principal">
+                <span class="input-icon">📍</span>
+                <div id="ubicacion-error" class="error-message"></div>
+            </div>
+
+            <button type="submit" id="submitBtn">
+                <span id="buttonText">Registrar Dispositivo</span>
+            </button>
+        </form>
+
+        <a href="/dashboard" class="link">Volver a la Página Principal</a>
+    </div>
+
+    <script>
+        // Mejorar la experiencia en móviles con el teclado
+        document.querySelectorAll("input, select").forEach(element => {
+            element.addEventListener("focus", function() {
+                window.scrollTo({
+                    top: this.offsetTop - 100,
+                    behavior: 'smooth'
+                });
+                
+                // Efecto visual para el campo enfocado
+                this.parentElement.style.transform = 'translateX(10px)';
+                setTimeout(() => {
+                    this.parentElement.style.transform = 'translateX(5px)';
+                }, 300);
+            });
+            
+            element.addEventListener("blur", function() {
+                this.parentElement.style.transform = 'translateX(0)';
+            });
+        });
+
+        // Validación en tiempo real
+        document.getElementById('direccion_ip').addEventListener('input', function() {
+            const ip = this.value.trim();
+            const errorElement = document.getElementById('ip-error');
+            
+            if (ip && !/^(?:\d{1,3}\.){3}\d{1,3}$/.test(ip)) {
+                this.classList.add('input-error');
+                errorElement.textContent = 'Por favor ingrese una dirección IP válida';
+                errorElement.style.display = 'block';
+            } else {
+                this.classList.remove('input-error');
+                errorElement.style.display = 'none';
+            }
+        });
+
+        document.getElementById('puerto').addEventListener('input', function() {
+            const puerto = this.value.trim();
+            const errorElement = document.getElementById('puerto-error');
+            
+            if (puerto && (puerto < 1 || puerto > 65535)) {
+                this.classList.add('input-error');
+                errorElement.textContent = 'El puerto debe estar entre 1 y 65535';
+                errorElement.style.display = 'block';
+            } else {
+                this.classList.remove('input-error');
+                errorElement.style.display = 'none';
+            }
+        });
+
+        // Validación del formulario al enviar
+        document.getElementById("deviceForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            const buttonText = document.getElementById('buttonText');
+            
+            // Mostrar estado de carga
+            submitBtn.disabled = true;
+            buttonText.innerHTML = '<span class="loading"></span> Registrando...';
+            
+            // Validar campos requeridos
+            let isValid = true;
+            const requiredFields = ['tipo', 'marca', 'modelo', 'ubicacion'];
+            
+            requiredFields.forEach(field => {
+                const element = document.getElementById(field);
+                const errorElement = document.getElementById(`${field}-error`);
+                
+                if (!element.value.trim()) {
+                    element.classList.add('input-error');
+                    errorElement.textContent = 'Este campo es requerido';
+                    errorElement.style.display = 'block';
+                    isValid = false;
+                    
+                    // Efecto de shake para errores
+                    element.style.animation = 'shake 0.5s ease';
+                    setTimeout(() => {
+                        element.style.animation = '';
+                    }, 500);
+                } else {
+                    element.classList.remove('input-error');
+                    errorElement.style.display = 'none';
+                }
+            });
+            
+            // Validar IP si se ingresó
+            const ip = document.getElementById("direccion_ip").value.trim();
+            if (ip && !/^(?:\d{1,3}\.){3}\d{1,3}$/.test(ip)) {
+                document.getElementById('direccion_ip').classList.add('input-error');
+                document.getElementById('ip-error').textContent = 'Por favor ingrese una dirección IP válida';
+                document.getElementById('ip-error').style.display = 'block';
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                submitBtn.disabled = false;
+                buttonText.textContent = 'Registrar Dispositivo';
+                return;
+            }
+            
+            // Simular envío al servidor (en un caso real, sería una petición fetch)
+            setTimeout(() => {
+                // Éxito en el registro
+                submitBtn.style.backgroundColor = '#2ecc71';
+                buttonText.innerHTML = '<span>✓</span> Dispositivo Registrado';
+                
+                // Mostrar mensaje de éxito
+                const successMessage = document.createElement('div');
+                successMessage.textContent = 'Dispositivo registrado exitosamente!';
+                successMessage.style.color = '#2ecc71';
+                successMessage.style.marginTop = '15px';
+                successMessage.style.fontWeight = 'bold';
+                successMessage.style.animation = 'fadeIn 0.5s ease';
+                
+                const form = document.getElementById('deviceForm');
+                form.insertBefore(successMessage, form.lastElementChild);
+                
+                // Redirigir después de 2 segundos (simulación)
+                setTimeout(() => {
+                    window.location.href = "/dashboard";
+                }, 2000);
+                
+            }, 1500);
+        });
+
+        // Efecto ripple para botones
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                let x = e.clientX - e.target.getBoundingClientRect().left;
+                let y = e.clientY - e.target.getBoundingClientRect().top;
+                
+                let ripple = document.createElement('span');
+                ripple.style.left = `${x}px`;
+                ripple.style.top = `${y}px`;
+                this.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 1000);
+            });
+        });
+
+        // Efecto hover para el contenedor
+        const container = document.querySelector('.container');
+        
+        container.addEventListener('mousemove', (e) => {
+            const xAxis = (window.innerWidth / 2 - e.pageX) / 15;
+            const yAxis = (window.innerHeight / 2 - e.pageY) / 15;
+            container.style.transform = `translateY(-5px) rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+        });
+
+        container.addEventListener('mouseenter', () => {
+            container.style.transition = 'all 0.1s ease';
+        });
+
+        container.addEventListener('mouseleave', () => {
+            container.style.transition = 'all 0.5s ease';
+            container.style.transform = 'translateY(0) rotateY(0deg) rotateX(0deg)';
+        });
+    </script>
+</body>
+</html>

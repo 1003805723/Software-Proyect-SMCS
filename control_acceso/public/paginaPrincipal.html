@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Panel de Monitoreo y Seguridad</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        :root {
+            --font-family-base: 'Poppins', 'Arial', sans-serif;
+            --primary-color: #3498db;
+            --primary-color-dark: #2980b9;
+            --secondary-color: #2c3e50;
+            --secondary-color-light: #34495e;
+            --danger-color: #e74c3c;
+            --danger-color-dark: #c0392b;
+            --success-color: #2ecc71;
+            --success-color-dark: #27ae60;
+            --warning-color: #f39c12;
+            --info-color: #3498db; 
+            --light-bg-color: #f4f7f9; 
+            --white-color: #ffffff;
+            --text-color-dark: #333;
+            --text-color-medium: #555; 
+            --text-color-light: #f8f9fa;
+            --border-color: #dfe3e8; 
+            --border-radius-base: 6px;
+            --shadow-soft: 0 2px 5px rgba(0, 0, 0, 0.06);
+            --shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.08);
+            --shadow-strong: 0 6px 12px rgba(0, 0, 0, 0.1);
+
+            --transition-swift: 0.15s;
+            --transition-smooth: 0.25s;
+            --transition-gentle: 0.4s;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: var(--font-family-base);
+            line-height: 1.6; color: var(--text-color-dark);
+            background-color: var(--light-bg-color); min-height: 100vh;
+            display: flex; flex-direction: column; perspective: 1000px;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px) scale(0.99); } 
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes slideInFromBottomStaggered {
+            from { opacity: 0; transform: translateY(25px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+            20%, 40%, 60%, 80% { transform: translateX(4px); }
+        }
+        @keyframes ripple { to { transform: scale(4); opacity: 0; } }
+        
+        .navbar {
+            background-color: var(--secondary-color); color: var(--white-color);
+            padding: 0.6rem 1rem; display: flex; flex-wrap: wrap; 
+            justify-content: space-between; align-items: center;
+            position: relative; box-shadow: var(--shadow-medium);
+            z-index: 100; animation: fadeIn var(--transition-gentle) ease-out;
+        }
+        .logo-container {
+            display: flex; align-items: center; margin-bottom: 0.7rem; 
+            width: 100%; justify-content: center; 
+            transition: transform var(--transition-smooth) ease;
+        }
+        .logo {
+            height: 36px; margin-right: 10px;
+            transition: transform var(--transition-smooth) ease-in-out, filter var(--transition-smooth) ease-in-out;
+            filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.2));
+        }
+        .logo:hover { transform: rotate(-5deg) scale(1.1); filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.3)); }
+        .title {
+            font-size: 1.3rem; font-weight: 700; 
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+            letter-spacing: 0.5px; transition: text-shadow var(--transition-smooth) ease;
+        }
+        .title:hover { text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); }
+        
+        .nav-links { display: none; width: 100%; flex-direction: column; list-style: none; }
+        .nav-links.active { display: flex; animation: fadeIn var(--transition-smooth) cubic-bezier(0.215, 0.610, 0.355, 1); }
+        .nav-links li { margin: 0.4rem 0; transition: transform var(--transition-swift) ease-out; }
+        .nav-links li:hover { transform: translateX(2px); }
+        
+        .btn { 
+            display: inline-flex; align-items: center; padding: 0.4rem 0.8rem; 
+            border-radius: var(--border-radius-base); text-decoration: none;
+            font-size: 0.82rem; font-weight: 500;
+            transition: background-color var(--transition-swift) ease-out, 
+                        transform var(--transition-swift) cubic-bezier(0.215, 0.610, 0.355, 1), 
+                        box-shadow var(--transition-swift) ease-out;
+            width: 100%; justify-content: center; position: relative;
+            overflow: hidden; border: none; line-height: 1.4; 
+        }
+        .btn::after { 
+            content: ''; position: absolute; top: 50%; left: 50%;
+            width: 5px; height: 5px; background: rgba(255, 255, 255, 0.3);
+            opacity: 0; border-radius: 100%;
+            transform: scale(1, 1) translate(-50%); transform-origin: 50% 50%;
+        }
+        .btn:focus:not(:active)::after { animation: ripple 0.6s ease-out; }
+        .btn i { margin-right: 6px; font-size: 0.9em; transition: transform var(--transition-swift) ease-out; }
+        .btn:hover i { transform: scale(1.08); }
+        
+        .btn-primary { background-color: var(--primary-color); color: var(--white-color); box-shadow: var(--shadow-soft); }
+        .btn-primary:hover { background-color: var(--primary-color-dark); transform: translateY(-1px); box-shadow: var(--shadow-medium); }
+        .btn-primary:active { transform: translateY(0); box-shadow: var(--shadow-soft); }
+        .btn-danger { background-color: var(--danger-color); color: var(--white-color); box-shadow: var(--shadow-soft); }
+        .btn-danger:hover { background-color: var(--danger-color-dark); transform: translateY(-1px); box-shadow: var(--shadow-medium); }
+        .btn-danger:active { transform: translateY(0); box-shadow: var(--shadow-soft); }
+        
+        .dropdown { position: relative; }
+        .dropbtn { background-color: var(--secondary-color-light); }
+        .dropbtn:hover { background-color: var(--secondary-color); box-shadow: var(--shadow-medium); }
+        .dropdown-content {
+            display: none; position: static; background-color: var(--white-color); 
+            width: 100%; box-shadow: none; z-index: 1; margin-top: 0.3rem; 
+            border-radius: var(--border-radius-base); overflow: hidden; 
+            animation: fadeIn var(--transition-swift) cubic-bezier(0.215, 0.610, 0.355, 1);
+            border: 1px solid var(--border-color);
+        }
+        .dropdown-content a {
+            color: var(--text-color-dark); padding: 0.6rem 0.9rem; 
+            text-decoration: none; display: flex; align-items: center;
+            transition: background-color var(--transition-swift) ease-out, 
+                        transform var(--transition-swift) ease-out, 
+                        color var(--transition-swift) ease-out;
+            font-size: 0.82rem; 
+        }
+        .dropdown-content a:hover { background-color: var(--primary-color-dark); color: var(--white-color); transform: translateX(3px); }
+        .dropdown-content i { margin-right: 8px; width: 16px; text-align: center; transition: transform var(--transition-swift) ease-out; }
+        .dropdown-content a:hover i { transform: scale(1.05); color: var(--white-color); }
+        .dropdown:hover .dropdown-content { display: block; }
+        
+        .menu-toggle {
+            display: block; cursor: pointer; padding: 0.5rem;
+            position: absolute; right: 1rem; top: 0.6rem; 
+            transition: transform var(--transition-medium) cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        .menu-toggle i { font-size: 1.3rem; color: var(--white-color); transition: transform var(--transition-medium) ease-in-out; }
+        
+        main { flex: 1; padding: 1rem; }
+        
+        .dashboard-overview, section:not(.dashboard-overview) {
+            animation: slideInFromBottomStaggered var(--transition-gentle) ease-out forwards;
+            opacity: 0; 
+        }
+        .dashboard-overview { animation-delay: 0s; }
+        .cameras { animation-delay: 0.05s; }
+        .devices { animation-delay: 0.1s; } 
+        .update-form { animation-delay: 0.15s; } /* Ajustar delay si se mueve a la izquierda */
+        .delete-form { animation-delay: 0.2s; } /* Ajustar delay si se mueve a la izquierda */
+        .logs { animation-delay: 0.15s; } /* Si queda en la segunda columna, este delay es para su posición ahí */
+        .controls { animation-delay: 0.2s; }
+
+
+        .dashboard-overview {
+            background: linear-gradient(135deg, var(--secondary-color-light), var(--secondary-color));
+            color: var(--white-color); padding: 1.5rem;
+            border-radius: var(--border-radius-base); margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-medium);
+        }
+        .dashboard-overview h2 { color: var(--white-color); margin-bottom: 0.5rem; font-size: 1.5rem; }
+        .dashboard-overview h2::after { display: none; }
+        .dashboard-overview h2 i { color: var(--primary-color); margin-right: 10px; transition: transform var(--transition-smooth) ease-out; }
+        .dashboard-overview:hover h2 i { transform: rotate(-10deg) scale(1.1); }
+
+        .welcome-message { font-size: 0.95rem; margin-bottom: 1.2rem; opacity: 0.9; }
+        .overview-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.08); padding: 1rem; border-radius: var(--border-radius-base);
+            display: flex; align-items: center;
+            transition: background-color var(--transition-smooth) ease-out, transform var(--transition-smooth) ease-out;
+        }
+        .stat-card:hover { background: rgba(255, 255, 255, 0.15); transform: translateY(-4px) scale(1.02); }
+        .stat-icon {
+            font-size: 1.8rem; margin-right: 12px; opacity: 0.8;
+            transition: transform var(--transition-smooth) ease-out, filter var(--transition-smooth) ease-out;
+        }
+        .stat-card:hover .stat-icon { transform: scale(1.1) rotate(-5deg); filter: brightness(1.2); }
+        .stat-info { display: flex; flex-direction: column; }
+        .stat-value { font-size: 1.4rem; font-weight: 600; line-height: 1.2; }
+        .stat-label { font-size: 0.75rem; opacity: 0.8; text-transform: uppercase; }
+        .stat-card.alert-stat .stat-icon, .stat-card.alert-stat .stat-value { color: var(--warning-color); }
+        .stat-card.success-stat .stat-icon, .stat-card.success-stat .stat-value { color: var(--success-color); }
+
+        section {
+            margin-bottom: 1.5rem; background: var(--white-color);
+            border-radius: var(--border-radius-base); padding: 1.2rem; 
+            box-shadow: var(--shadow-medium);
+            transition: transform var(--transition-smooth) ease-out, box-shadow var(--transition-smooth) ease-out;
+        }
+        section:hover { transform: translateY(-2px); box-shadow: var(--shadow-strong); }
+        
+        h2 { 
+            font-size: 1.25rem; margin-bottom: 0.9rem; 
+            color: var(--secondary-color); display: flex;
+            align-items: center; position: relative; font-weight: 600;
+        }
+        h2::after { 
+            content: ''; position: absolute; bottom: -4px; left: 0;
+            width: 30px; height: 2.5px; background: var(--primary-color);
+            border-radius: 1.5px; transition: width var(--transition-smooth) ease-out;
+        }
+        section:hover h2::after { width: 60px; }
+        h2 i { margin-right: 8px; transition: transform var(--transition-smooth) ease-out; color: var(--primary-color); }
+        section:hover h2 i { transform: scale(1.1) rotate(-4deg); }
+        
+        .cameras .camera-grid, .devices .devices-grid { 
+            max-height: 400px; 
+            overflow-y: auto;
+            display: grid; 
+            gap: 1rem; 
+        }
+        .camera-grid { grid-template-columns: 1fr; } 
+        .devices-grid { grid-template-columns: 1fr; } 
+
+        .camera {
+            border: 1px solid var(--border-color); border-radius: var(--border-radius-base);
+            overflow: hidden; transition: transform var(--transition-smooth) ease-out, box-shadow var(--transition-smooth) ease-out;
+            position: relative; background-color: var(--white-color);
+        }
+        .camera::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0) 45%);
+            opacity: 0; transition: opacity var(--transition-smooth) ease-out; pointer-events: none; 
+        }
+        .camera:hover::before { opacity: 1; }
+        .camera:hover { transform: translateY(-2px); box-shadow: var(--shadow-strong); }
+        .camera img {
+            width: 100%; height: auto; max-height: 170px; 
+            object-fit: cover; display: block;
+            transition: transform var(--transition-gentle) ease-out; 
+        }
+        .camera:hover img { transform: scale(1.02); }
+        .camera p {
+            padding: 0.6rem; text-align: center; background: var(--light-bg-color); 
+            margin: 0; font-weight: 500; font-size: 0.85rem; 
+            color: var(--secondary-color-light); 
+            border-top: 1px solid var(--border-color);
+            transition: background-color var(--transition-swift) ease-out;
+        }
+        .camera:hover p { background: #e0e6eb; }
+        
+        .device-card {
+            border: 1px solid var(--border-color); border-radius: var(--border-radius-base); 
+            padding: 0.9rem; background-color: var(--white-color); box-shadow: var(--shadow-soft);
+            transition: transform var(--transition-smooth) ease-out, box-shadow var(--transition-smooth) ease-out;
+            position: relative; overflow: hidden;
+        }
+        .device-card::before { 
+            content: ''; position: absolute; top: 0; left: 0; width: 3.5px; height: 100%;
+            background: var(--primary-color);
+            transition: width var(--transition-smooth) ease-out, background-color var(--transition-smooth) ease-out;
+        }
+        .device-card:hover::before { width: 5px; background-color: var(--primary-color-dark); }
+        .device-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-strong); }
+        .device-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 0.6rem; border-bottom: 1px solid #f0f0f0; 
+            padding-bottom: 0.6rem; transition: border-color var(--transition-smooth) ease-out;
+        }
+        .device-card:hover .device-header { border-bottom-color: var(--border-color); }
+        .device-header h3 {
+            margin: 0; font-size: 1rem; color: var(--secondary-color); font-weight: 600;
+            transition: color var(--transition-smooth) ease-out;
+        }
+        .device-card:hover .device-header h3 { color: var(--primary-color-dark); }
+        .device-id {
+            font-size: 0.7rem; color: #6c757d; background-color: #eef2f5; 
+            padding: 0.1rem 0.35rem; border-radius: 4px; 
+            transition: color var(--transition-smooth) ease-out, background-color var(--transition-smooth) ease-out;
+        }
+        .device-card:hover .device-id { color: var(--white-color); background-color: var(--primary-color); }
+        .device-details p { margin: 0.3rem 0; font-size: 0.82rem; }
+        .device-details strong { color: var(--secondary-color-light); font-weight: 500; }
+        
+        .logs .table-responsive {
+            max-height: 300px; 
+            overflow-y: auto;  
+            overflow-x: auto; 
+            border: 1px solid var(--border-color); 
+            border-radius: var(--border-radius-base);
+        }
+        table {
+            width: 100%; border-collapse: collapse; font-size: 0.82rem; 
+            background-color: var(--white-color); 
+        }
+        th, td {
+            padding: 0.65rem 0.8rem; text-align: left; 
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color var(--transition-swift) ease-out;
+        }
+        tr td:first-child, tr th:first-child { padding-left: 0.9rem; } 
+        tr td:last-child, tr th:last-child { padding-right: 0.9rem; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background-color: #edf4fa; }
+        th {
+            background-color: var(--light-bg-color); font-weight: 600; 
+            color: var(--secondary-color); position: sticky; top: 0; z-index: 1; 
+        }
+        .alert { color: var(--danger-color); font-weight: 500; animation: pulse 1.8s infinite; }
+        .safe { color: var(--success-color); font-weight: 500; }
+        .warning { color: var(--warning-color); font-weight: 500; animation: pulse 2.5s infinite; }
+        
+        .update-form form, .delete-form form {
+            display: grid; gap: 0.9rem; grid-template-columns: 1fr;
+        }
+        /* Se elimina la regla vacía que causaba la advertencia */
+        /* .update-form form .form-group:nth-child(3),
+        .update-form form .form-group:nth-child(4) {} */
+
+        .update-form form button[type="submit"], 
+        .delete-form form button[type="submit"] {
+            margin-top: 0.5rem; width: auto; 
+            padding-left: 1.5rem; padding-right: 1.5rem; 
+            justify-self: flex-end; 
+        }
+        .delete-form form button[type="submit"] { justify-self: center; }
+
+        .control-buttons { display: grid; grid-template-columns: 1fr; gap: 0.7rem; }
+        .control-buttons button { 
+            padding: 0.6rem 0.8rem; border: none; 
+            border-radius: var(--border-radius-base);
+            font-size: 0.85rem; font-weight: 500; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: background-color var(--transition-swift) ease-out, 
+                        transform var(--transition-swift) ease-out, 
+                        box-shadow var(--transition-swift) ease-out;
+            position: relative; overflow: hidden;
+        }
+        .control-buttons button::after { content:''; position:absolute; top:50%; left:50%; width:5px; height:5px; background:rgba(255,255,255,0.3); opacity:0; border-radius:100%; transform:scale(1,1) translate(-50%); transform-origin:50% 50%;}
+        .control-buttons button:focus:not(:active)::after { animation:ripple .6s ease-out; }
+        .control-buttons button i { margin-right:6px; transition:transform var(--transition-swift) ease-out; font-size:.9em;}
+        .control-buttons button:hover i { transform:scale(1.08); }
+        .control-buttons button:hover { transform:translateY(-2px); box-shadow:var(--shadow-medium); }
+        .control-buttons button:active { transform:translateY(0); box-shadow:var(--shadow-soft);}
+        .alarm { background-color: var(--danger-color); color: var(--white-color); box-shadow: var(--shadow-soft); }
+        .alarm:hover { background-color: var(--danger-color-dark); }
+        .disable { background-color: var(--success-color); color: var(--white-color); box-shadow: var(--shadow-soft); }
+        .disable:hover { background-color: var(--success-color-dark); }
+
+        .form-group { margin-bottom: 0; } 
+        label {
+            display: block; margin-bottom: 0.35rem; 
+            font-weight: 500; color: var(--secondary-color-light); 
+            font-size: 0.85rem; 
+        }
+        input, select, textarea { 
+            width: 100%; padding: 0.65rem 0.8rem; 
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-base);
+            font-size: 0.85rem; font-family: var(--font-family-base); 
+            color: var(--text-color-dark); background-color: var(--white-color); 
+            transition: border-color var(--transition-swift) ease-out, 
+                        box-shadow var(--transition-swift) ease-out;
+        }
+        textarea { resize: vertical; min-height: 65px; }
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2); 
+            outline: none;
+        }
+        
+        footer {
+            background-color: var(--secondary-color); color: var(--text-color-light); 
+            text-align: center; padding: 1rem; font-size: 0.8rem; 
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.07); 
+            animation: fadeIn var(--transition-gentle) ease-out;
+        }
+        footer #securityAd {
+            margin-top: 0.5rem; margin-bottom: 0.8rem;
+            font-weight: 500; opacity: 0; 
+            transition: opacity 0.5s ease-in-out; min-height: 1.5em; 
+            display: inline-block; line-height: 1.5em;
+            color: var(--warning-color); 
+            border: 1px dashed var(--secondary-color-light);
+            padding: 0.4rem 0.8rem; border-radius: var(--border-radius-base);
+            background-color: rgba(255,255,255,0.05);
+        }
+        footer #securityAd i { margin-right: 7px; }
+        
+        @media (min-width: 500px) { 
+            .update-form form { grid-template-columns: 1fr 1fr; }
+            .update-form form button[type="submit"] { grid-column: 1 / -1; }
+
+            .delete-form form { grid-template-columns: 1fr 1fr; }
+            .delete-form form button[type="submit"] {
+                grid-column: 1 / -1; width: auto; 
+                min-width: 120px; justify-self: center; 
+            }
+            .control-buttons { grid-template-columns: 1fr 1fr; }
+        }
+
+        @media (min-width: 768px) {
+            .navbar { padding: 0.6rem 1.2rem; flex-wrap: nowrap; } 
+            .logo-container { width: auto; margin-bottom: 0; justify-content: flex-start; }
+            .title { font-size: 1.5rem; } 
+            .nav-links { display: flex; flex-direction: row; width: auto; align-items: center; }
+            .nav-links li { margin: 0 0.4rem; } 
+            .btn { width: auto; }
+            .menu-toggle { display: none; }
+            .dropdown-content { position: absolute; min-width: 200px; box-shadow: var(--shadow-medium); border: 1px solid var(--border-color); margin-top: 0.2rem;}
+            
+            .dashboard-overview { padding: 1.8rem; margin-bottom: 1.8rem;}
+            .dashboard-overview h2 { font-size: 1.6rem; }
+            .overview-stats { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.2rem;} 
+            .stat-card { padding: 1.2rem; }
+            .stat-icon { font-size: 2rem; }
+            .stat-value { font-size: 1.6rem; }
+            .stat-label { font-size: 0.8rem; }
+
+            main { padding: 1.5rem; } 
+            section { padding: 1.5rem; } 
+            h2 { font-size: 1.35rem; } 
+            .cameras .camera-grid { grid-template-columns: repeat(2, 1fr); }
+            .devices .devices-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        
+        @media (min-width: 992px) {
+            main { padding: 1.8rem; } 
+            .camera-grid { grid-template-columns: repeat(3, 1fr); }
+            .devices-grid { grid-template-columns: repeat(3, 1fr); }
+            main.dashboard { 
+                display: grid; 
+                grid-template-columns: minmax(0, 2.5fr) minmax(0, 1.5fr); /* Columna izq más ancha */
+                gap: 1.8rem; 
+                grid-auto-rows: min-content; /* Filas se adaptan al contenido */
+            }
+            .dashboard-overview { grid-column: 1 / -1; grid-row: 1; } 
+
+            .cameras { grid-column: 1; grid-row: 2; } 
+            .devices { grid-column: 1; grid-row: 3; } 
+            .update-form { grid-column: 1; grid-row: 4; } /* Mover a columna izquierda */
+            .delete-form { grid-column: 1; grid-row: 5; } /* Mover a columna izquierda */
+            
+            .logs { grid-column: 2; grid-row: 2; } 
+            .controls { grid-column: 2; grid-row: 3; } 
+            /* Las filas de la columna 2 se ajustarán según el contenido de la columna 1 y su propio contenido */
+
+            .title { font-size: 1.6rem; } 
+        }
+
+        @media (min-width: 1200px) { 
+            .cameras .camera-grid { grid-template-columns: repeat(4, 1fr); }
+            main { padding: 2rem; }
+        }
+        
+        @supports (-webkit-touch-callout: none) {
+            input, select, button, textarea { 
+                -webkit-appearance: none; appearance: none;
+                border-radius: var(--border-radius-base); 
+            }
+        }
+
+        .modal {
+            display: none; position: fixed; z-index: 1000;
+            left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(30,40,50,0.6); 
+            animation: fadeIn var(--transition-smooth) ease-out;
+            backdrop-filter: blur(2.5px); 
+            -webkit-backdrop-filter: blur(2.5px);
+        }
+        .modal-content {
+            background-color: var(--white-color); margin: 6% auto; padding: 20px; 
+            border-radius: var(--border-radius-base); box-shadow: var(--shadow-strong);
+            width: 90%; max-width: 480px; position: relative;
+            animation: float 4s ease-in-out infinite, fadeIn var(--transition-gentle) cubic-bezier(0.215, 0.610, 0.355, 1); 
+        }
+        .close {
+            position: absolute; right: 10px; top: 10px; 
+            color: #6c757d; font-size: 20px; font-weight: bold; cursor: pointer;
+            transition: color var(--transition-swift) ease-out, transform var(--transition-swift) ease-out;
+            width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; 
+        }
+        .close:hover {
+            color: var(--danger-color); background-color: rgba(0,0,0,0.05); 
+            transform: rotate(90deg) scale(1.05); 
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo-container">
+            <img src="/img/logo.png" alt="Logo SMCS" class="logo">
+            <h1 class="title">Monitoreo y Seguridad Central</h1>
+        </div>
+        
+        <div class="menu-toggle" onclick="toggleMenu()"> <i class="fas fa-bars"></i> </div>
+        
+        <ul class="nav-links" id="navLinks">
+            <li><button class="btn btn-danger" onclick="cerrarSesion()" aria-label="Cerrar sesión"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</button></li>
+            <li><a href="#" class="btn btn-primary" onclick="mostrarFormularioDispositivo()" aria-label="Registrar dispositivo"><i class="fas fa-plus-circle"></i> Disp.</a></li>
+            <li><a href="#" class="btn btn-primary" onclick="mostrarFormularioServicio()" aria-label="Registrar servicio"><i class="fas fa-concierge-bell"></i> Serv.</a></li>
+            <li class="dropdown">
+                <a href="#" class="dropbtn" aria-label="Dispositivos"><i class="fas fa-hdd"></i> Dispositivos</a>
+                <ul class="dropdown-content">
+                    <li><a href="#"><i class="fas fa-edit"></i> Editar</a></li>
+                    <li><a href="#"><i class="fas fa-plus"></i> Agregar</a></li>
+                    <li><a href="#"><i class="fas fa-eye"></i> Monitorear</a></li>
+                    <li><a href="#"><i class="fas fa-trash-alt"></i> Eliminar</a></li>
+                </ul>
+            </li>
+            <li class="dropdown">
+                <a href="#" class="dropbtn" aria-label="Registros"><i class="fas fa-history"></i> Registros</a>
+                <ul class="dropdown-content">
+                    <li><a href="#"><i class="fas fa-video"></i> Grabaciones</a></li>
+                    <li><a href="#"><i class="fas fa-calendar-alt"></i> Eventos</a></li>
+                    <li><a href="#"><i class="fas fa-desktop"></i> Monitoreo</a></li>
+                    <li><a href="#"><i class="fas fa-eraser"></i> Eliminar Registro</a></li>
+                </ul>
+            </li>
+            <li class="dropdown">
+                <a href="#" class="dropbtn" aria-label="Configuración"><i class="fas fa-cog"></i> Ajustes</a>
+                <ul class="dropdown-content">
+                    <li><a href="#"><i class="fas fa-user-edit"></i> Perfil</a></li>
+                    <li><a href="#"><i class="fas fa-shield-alt"></i> Seguridad</a></li>
+                    <li><a href="#"><i class="fas fa-bell"></i> Notificaciones</a></li>
+                    <li><a href="#"><i class="fas fa-paint-brush"></i> Apariencia</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+
+    <main class="dashboard">
+        <section class="dashboard-overview">
+            <div class="overview-header">
+                <h2><i class="fas fa-tachometer-alt"></i> Resumen del Sistema</h2>
+                <p class="welcome-message">Bienvenido al Panel de Monitoreo y Control de Seguridad.</p>
+            </div>
+            <div class="overview-stats">
+                <div class="stat-card"><i class="fas fa-hdd stat-icon" style="color: var(--info-color);"></i><div class="stat-info"><span class="stat-value">18/20</span><span class="stat-label">Dispositivos Activos</span></div></div>
+                <div class="stat-card alert-stat"><i class="fas fa-exclamation-triangle stat-icon"></i><div class="stat-info"><span class="stat-value">3</span><span class="stat-label">Alertas Hoy</span></div></div>
+                <div class="stat-card success-stat"><i class="fas fa-shield-alt stat-icon"></i><div class="stat-info"><span class="stat-value">Óptimo</span><span class="stat-label">Estado del Sistema</span></div></div>
+                <div class="stat-card"><i class="fas fa-calendar-check stat-icon" style="color: #54a0ff;"></i><div class="stat-info"><span class="stat-value" id="last-check-time">Hace 2 min</span><span class="stat-label">Última Verificación</span></div></div>
+            </div>
+        </section>
+
+        <section class="cameras">
+            <h2><i class="fas fa-video"></i> Cámaras en Vivo</h2>
+            <div class="camera-grid">
+                <div class="camera"><img src="/img/camera1.jpg" alt="Cámara 1"><p>Entrada Principal</p></div>
+                <div class="camera"><img src="/img/camera2.jpg" alt="Cámara 2"><p>Pasillo</p></div>
+                <div class="camera"><img src="/img/camera3.jpg" alt="Cámara 3"><p>Estacionamiento</p></div>
+                <div class="camera"><img src="/img/camera4.jpg" alt="Cámara 4"><p>Recepción</p></div>
+            </div>
+        </section>
+
+        <section class="devices">
+            <h2><i class="fas fa-microchip"></i> Dispositivos Registrados</h2> 
+            <div id="devices-list" class="devices-grid"></div>
+        </section>
+
+        <section class="update-form"> <h2><i class="fas fa-edit"></i> Actualizar Datos</h2>
+            <form id="updateForm">
+                <div class="form-group"><label for="entityType">Tipo Entidad:</label><select id="entityType" name="entityType" required><option value="usuario">Usuario</option><option value="dispositivo">Dispositivo</option><option value="servicio">Servicio</option></select></div>
+                <div class="form-group"><label for="entityId">ID Entidad:</label><input type="text" id="entityId" name="entityId" required></div>
+                <div class="form-group"><label for="updateField">Campo:</label><input type="text" id="updateField" name="updateField" required></div>
+                <div class="form-group"><label for="newValue">Nuevo Valor:</label><input type="text" id="newValue" name="newValue" required></div>
+                <button type="submit" class="btn btn-primary">Actualizar</button>
+            </form>
+        </section>
+
+        <section class="delete-form"> <h2><i class="fas fa-trash-alt"></i> Eliminar Datos</h2>
+            <form id="deleteForm">
+                <div class="form-group"><label for="deleteEntityType">Tipo Entidad:</label><select id="deleteEntityType" name="deleteEntityType" required><option value="dispositivo">Dispositivo</option><option value="servicio">Servicio</option></select></div>
+                <div class="form-group"><label for="deleteEntityId">ID Entidad:</label><input type="text" id="deleteEntityId" name="deleteEntityId" required></div>
+                <button type="submit" class="btn btn-danger">Eliminar</button>
+            </form>
+        </section>
+
+        <section class="logs"> <h2><i class="fas fa-clipboard-list"></i> Registros Recientes</h2>
+            <div class="table-responsive">
+                <table>
+                    <thead><tr><th>Fecha</th><th>Evento</th><th>Estado</th></tr></thead>
+                    <tbody id="log-data">
+                        <tr><td>03/04/2025 08:15</td><td><i class="fas fa-running"></i> Movimiento detectado por DIS-1001</td><td class="alert">🔴 Alerta</td></tr>
+                        <tr><td>03/04/2025 08:10</td><td><i class="fas fa-door-open"></i> Puerta principal abierta - DIS-1005</td><td class="safe">✅ Normal</td></tr>
+                        <tr><td>03/04/2025 08:05</td><td><i class="fas fa-temperature-high"></i> Temp. alta - DIS-1012</td><td class="warning">⚠ Advertencia</td></tr>
+                        <tr><td>03/04/2025 07:58</td><td><i class="fas fa-sync-alt"></i> Cámara DIS-1003 reiniciada</td><td class="safe">✅ Sistema</td></tr>
+                        <tr><td>03/04/2025 07:45</td><td><i class="fas fa-user-check"></i> Reconocimiento facial exitoso - DIS-1008</td><td class="safe">✅ Autorizado</td></tr>
+                        <tr><td>03/04/2025 07:30</td><td><i class="fas fa-plug"></i> DIS-1015 (NVR) reconectado</td><td class="safe">✅ Sistema</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="controls"> <h2><i class="fas fa-toggle-on"></i> Panel de Control</h2>
+            <div class="control-buttons">
+                <button onclick="activarAlarma()" class="alarm"><i class="fas fa-bell"></i> Activar Alarma</button>
+                <button onclick="desactivarAlarma()" class="disable"><i class="fas fa-bell-slash"></i> Desactivar Alarma</button>
+            </div>
+        </section>
+    </main>
+
+    <div id="dispositivoModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="cerrarModal('dispositivoModal')">&times;</span>
+            <h2><i class="fas fa-plus-circle"></i> Registrar Nuevo Dispositivo</h2>
+            <form id="formDispositivo">
+                <div class="form-group"><label for="tipoDispositivo">Tipo:</label><select id="tipoDispositivo" name="tipoDispositivo" required><option value="">Seleccione</option><option value="camara">Cámara</option><option value="sensor">Sensor</option><option value="alarma">Alarma</option><option value="nvr">NVR</option></select></div>
+                <div class="form-group"><label for="marcaDispositivo">Marca:</label><input type="text" id="marcaDispositivo" name="marcaDispositivo" required></div>
+                <div class="form-group"><label for="modeloDispositivo">Modelo:</label><input type="text" id="modeloDispositivo" name="modeloDispositivo" required></div>
+                <div class="form-group"><label for="ubicacionDispositivo">Ubicación:</label><input type="text" id="ubicacionDispositivo" name="ubicacionDispositivo" required></div>
+                <div class="form-group"><label for="ipDispositivo">IP:</label><input type="text" id="ipDispositivo" name="ipDispositivo" placeholder="Ej: 192.168.1.100" required></div>
+                <button type="submit" class="btn btn-primary">Registrar Dispositivo</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="servicioModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="cerrarModal('servicioModal')">&times;</span>
+            <h2><i class="fas fa-plus-circle"></i> Registrar Nuevo Servicio</h2>
+            <form id="formServicio">
+                <div class="form-group"><label for="nombreServicio">Nombre:</label><input type="text" id="nombreServicio" name="nombreServicio" required></div>
+                <div class="form-group"><label for="tipoServicio">Tipo:</label><select id="tipoServicio" name="tipoServicio" required><option value="">Seleccione</option><option value="monitoreo">Monitoreo</option><option value="mantenimiento">Mantenimiento</option><option value="soporte">Soporte</option><option value="actualizacion">Actualización</option></select></div>
+                <div class="form-group"><label for="descripcionServicio">Descripción:</label><textarea id="descripcionServicio" name="descripcionServicio" rows="3" required></textarea></div>
+                <div class="form-group"><label for="fechaInicio">F. Inicio:</label><input type="date" id="fechaInicio" name="fechaInicio" required></div>
+                <div class="form-group"><label for="fechaFin">F. Fin:</label><input type="date" id="fechaFin" name="fechaFin"></div>
+                <button type="submit" class="btn btn-primary">Registrar Servicio</button>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <p id="securityAd"></p> 
+        <p><b>Versión</b> 2.0 | &copy; 2025 Monitoreo y Seguridad. Todos los Derechos Reservados.</p>
+    </footer>
+
+    <script>
+        function generarDispositivos() {
+            const dispositivos = [];
+            const tipos = ['Cámara IP', 'Cámara Analógica', 'Sensor de Movimiento', 'Alarma', 'NVR', 'DVR'];
+            const marcas = ['Hikvision', 'Dahua', 'Axis', 'Bosch', 'Samsung', 'Honeywell'];
+            const estados = ['Activo', 'Inactivo', 'En mantenimiento', 'Desconectado'];
+            const ubicaciones = ['Entrada Principal', 'Pasillo', 'Oficina', 'Estacionamiento', 'Recepción', 'Sala de Servidores'];
+            for (let i = 1; i <= 20; i++) {
+                const tipo = tipos[Math.floor(Math.random() * tipos.length)];
+                const marca = marcas[Math.floor(Math.random() * marcas.length)];
+                let estado = estados[Math.floor(Math.random() * estados.length)];
+                if (i % 5 === 0) estado = 'En mantenimiento';
+                if (i % 7 === 0) estado = 'Desconectado';
+                const ubicacion = ubicaciones[Math.floor(Math.random() * ubicaciones.length)];
+                dispositivos.push({
+                    id: `DIS-${1000 + i}`, nombre: `${tipo} ${marca} ${i}`, tipo: tipo, marca: marca,
+                    modelo: `MOD-${Math.floor(Math.random() * 900) + 100}`, estado: estado, ubicacion: ubicacion,
+                    ip: `192.168.1.${Math.floor(Math.random() * 254) + 1}`,
+                    ultimaConexion: new Date(Date.now() - Math.floor(Math.random() * 7 * 24 * 60 * 60 * 1000)).toLocaleDateString()
+                });
+            }
+            return dispositivos;
+        }
+
+        function mostrarDispositivos() {
+            const dispositivos = generarDispositivos();
+            const container = document.getElementById('devices-list');
+            if (!container) return; 
+            container.innerHTML = '';
+            const configureGrid = () => {
+                if (!container) return;
+                const gridColumns = window.innerWidth >= 992 ? 'repeat(3, 1fr)' : 
+                                  window.innerWidth >= 768 ? 'repeat(2, 1fr)' : '1fr';
+                container.style.gridTemplateColumns = gridColumns;
+            };
+            configureGrid(); 
+            dispositivos.forEach(dispositivo => {
+                const card = document.createElement('div');
+                card.className = 'device-card';
+                let estadoClass = 'safe'; 
+                if (dispositivo.estado === 'Inactivo' || dispositivo.estado === 'Desconectado') estadoClass = 'alert';
+                else if (dispositivo.estado === 'En mantenimiento') estadoClass = 'warning';
+                card.innerHTML = `
+                    <div class="device-header"><h3>${dispositivo.nombre}</h3><span class="device-id">${dispositivo.id}</span></div>
+                    <div class="device-details">
+                        <p><strong>Tipo:</strong> ${dispositivo.tipo}</p><p><strong>Marca/Modelo:</strong> ${dispositivo.marca} / ${dispositivo.modelo}</p>
+                        <p><strong>Ubicación:</strong> ${dispositivo.ubicacion}</p><p><strong>IP:</strong> ${dispositivo.ip}</p>
+                        <p><strong>Estado:</strong> <span class="${estadoClass}">${dispositivo.estado}</span></p>
+                        <p><strong>Última conexión:</strong> ${dispositivo.ultimaConexion}</p>
+                    </div>`;
+                container.appendChild(card);
+            });
+            if (!window.devicesGridResizerAttached) {
+                window.addEventListener('resize', configureGrid);
+                window.devicesGridResizerAttached = true; 
+            }
+        }
+
+        function mostrarFormularioDispositivo() {
+            const modal = document.getElementById('dispositivoModal'); if(modal) modal.style.display = 'block';
+        }
+        function mostrarFormularioServicio() {
+            const modal = document.getElementById('servicioModal'); if(modal) modal.style.display = 'block';
+        }
+        function cerrarModal(modalId) {
+            const modal = document.getElementById(modalId); if(modal) modal.style.display = 'none';
+        }
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) event.target.style.display = 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            mostrarDispositivos();
+            const formDispositivo = document.getElementById('formDispositivo');
+            if(formDispositivo) formDispositivo.addEventListener('submit', function(e) {
+                e.preventDefault(); alert('Dispositivo registrado con éxito (simulación)');
+                cerrarModal('dispositivoModal'); this.reset(); mostrarDispositivos(); 
+            });
+            const formServicio = document.getElementById('formServicio');
+            if(formServicio) formServicio.addEventListener('submit', function(e) {
+                e.preventDefault(); alert('Servicio registrado con éxito (simulación)');
+                cerrarModal('servicioModal'); this.reset();
+            });
+            
+            document.querySelectorAll('.btn, .control-buttons button').forEach(button => {
+                button.addEventListener('mousedown', function(e) { 
+                    const rect = this.getBoundingClientRect();
+                    let ripple = this.querySelector('span.js-ripple-effect');
+                    if (ripple) ripple.remove();
+                    ripple = document.createElement('span');
+                    ripple.className = 'js-ripple-effect'; 
+                    const size = Math.max(rect.width, rect.height) * 1.5; 
+                    ripple.style.width = ripple.style.height = size + 'px';
+                    ripple.style.left = e.clientX - rect.left - (size / 2) + 'px'; 
+                    ripple.style.top = e.clientY - rect.top - (size / 2) + 'px';
+                    ripple.style.position = 'absolute'; ripple.style.borderRadius = '50%';
+                    ripple.style.background = 'rgba(255, 255, 255, 0.4)'; 
+                    ripple.style.transform = 'scale(0)'; ripple.style.animation = 'ripple 0.6s linear'; 
+                    ripple.style.pointerEvents = 'none'; 
+                    this.appendChild(ripple);
+                    setTimeout(() => { ripple.remove(); }, 600); 
+                });
+            });
+
+            const securityAds = [
+                "¡Sistema Protegido 24/7! Tu tranquilidad es nuestra prioridad.",
+                "Actualiza tus contraseñas: la primera línea de defensa es la prevención.",
+                "Monitoreo Activo: Ojos en cada rincón, siempre alerta para tu seguridad.",
+                "¿Ves algo sospechoso en el sistema? ¡Reporta inmediatamente al administrador!",
+                "La seguridad es un esfuerzo de todos. ¡Colabora y mantente vigilante!",
+                "Tecnología de Vanguardia para una protección superior contra amenazas.",
+                "Invierte en seguridad hoy, evita pérdidas y problemas mañana.",
+                "No compartas tu información de acceso con nadie. ¡Nunca lo hagas!",
+                "Mantén tus dispositivos y software actualizados contra nuevas vulnerabilidades.",
+                "Confía en los expertos. Nuestro sistema de seguridad está diseñado para protegerte."
+            ];
+            const adElement = document.getElementById('securityAd');
+            if (adElement) {
+                let currentAdIndex = Math.floor(Math.random() * securityAds.length);
+                const showAd = () => {
+                    adElement.style.opacity = 0;
+                    setTimeout(() => {
+                        adElement.innerHTML = `<i class="fas fa-bullhorn"></i> ${securityAds[currentAdIndex]}`;
+                        adElement.style.opacity = 1;
+                        currentAdIndex = (currentAdIndex + 1) % securityAds.length;
+                    }, 500); 
+                };
+                showAd(); 
+                setInterval(showAd, 5000); 
+            }
+        });
+
+        function toggleMenu() {
+            const navLinks = document.getElementById('navLinks');
+            const icon = document.querySelector('.menu-toggle i');
+            navLinks.classList.toggle('active');
+            icon.style.transition = 'transform var(--transition-medium) ease-in-out'; 
+            if (navLinks.classList.contains('active')) {
+                icon.classList.remove('fa-bars'); icon.classList.add('fa-times');
+                icon.style.transform = 'rotate(180deg)'; 
+            } else {
+                icon.classList.remove('fa-times'); icon.classList.add('fa-bars');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        async function cerrarSesion() {
+            if (confirm('¿Está seguro que desea cerrar sesión?')) {
+                try {
+                    const response = await fetch('/logout', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin'
+                    });
+                    document.body.style.transition = 'opacity var(--transition-gentle) ease-out, transform var(--transition-gentle) ease-out';
+                    document.body.style.opacity = '0'; document.body.style.transform = 'translateY(15px)'; 
+                    setTimeout(() => {
+                        if (response.redirected) window.location.href = response.url;
+                        else window.location.href = '/login';
+                    }, 400); 
+                } catch (error) {
+                    console.error('Error al cerrar sesión:', error);
+                    alert('Error de conexión al cerrar sesión. Intente nuevamente.');
+                    document.body.style.opacity = '1'; document.body.style.transform = 'translateY(0)';
+                }
+            }
+        }
+
+        function activarAlarma() {
+            const alarmButton = document.querySelector('.alarm'); if(alarmButton.disabled) return;
+            alarmButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Activando...'; alarmButton.disabled = true;
+            setTimeout(() => {
+                alert('Alarma activada'); alarmButton.innerHTML = '<i class="fas fa-bell"></i> Alarma Activada';
+            }, 1200);
+        }
+        function desactivarAlarma() {
+            const disableButton = document.querySelector('.disable'); if(disableButton.disabled) return;
+            disableButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Desactivando...'; disableButton.disabled = true;
+            setTimeout(() => {
+                alert('Alarma desactivada'); disableButton.innerHTML = '<i class="fas fa-bell-slash"></i> Alarma Desactivada';
+            }, 1200);
+        }
+        
+        const setupFormSubmission = (formId, successMessage) => {
+            const form = document.getElementById(formId); if (!form) return;
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const submitButton = this.querySelector('button[type="submit"]'); if (!submitButton) return;
+                let allFieldsValid = true;
+                this.querySelectorAll('input[required], select[required], textarea[required]').forEach(field => {
+                    if (!field.value.trim()) {
+                        allFieldsValid = false; field.style.borderColor = 'var(--danger-color)'; 
+                    } else { field.style.borderColor = 'var(--border-color)'; }
+                });
+                if (!allFieldsValid) {
+                    alert("Por favor, complete todos los campos obligatorios.");
+                    const formSection = form.closest('section');
+                    if (formSection) {
+                        formSection.classList.add('shake-animation');
+                        setTimeout(() => formSection.classList.remove('shake-animation'), 500);
+                    } return;
+                }
+                const originalButtonHTML = submitButton.innerHTML; 
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...'; submitButton.disabled = true;
+                setTimeout(() => {
+                    alert(successMessage + ' (simulación)');
+                    submitButton.innerHTML = `<i class="fas fa-check"></i> Hecho`; this.reset(); 
+                    this.querySelectorAll('input, select, textarea').forEach(field => {
+                        field.style.borderColor = 'var(--border-color)'; 
+                    });
+                    setTimeout(() => {
+                        submitButton.innerHTML = originalButtonHTML; submitButton.disabled = false;
+                    }, 1800);
+                }, 1500);
+            });
+        };
+        setupFormSubmission('updateForm', 'Datos actualizados con éxito');
+        setupFormSubmission('deleteForm', 'Elemento eliminado con éxito');
+        
+        if (!document.querySelector('style#shake-animation-style')) {
+            const styleSheet = document.createElement("style");
+            styleSheet.id = "shake-animation-style"; styleSheet.type = "text/css";
+            styleSheet.innerText = ".shake-animation { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }";
+            document.head.appendChild(styleSheet);
+        }
+
+        const lastCheckTimeEl = document.getElementById('last-check-time');
+        if (lastCheckTimeEl) {
+            let minutesAgo = 2;
+            setInterval(() => {
+                minutesAgo++; lastCheckTimeEl.textContent = `Hace ${minutesAgo} min`;
+            }, 60000); 
+        }
+    </script>
+</body>
+</html>
