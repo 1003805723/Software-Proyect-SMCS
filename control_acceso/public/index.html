@@ -323,139 +323,161 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-    const loginContainer = document.querySelector('.login-container');
-    const emailInput = document.getElementById("email");
-    const passwordInput = document.getElementById("password");
-    const togglePasswordButton = document.getElementById('togglePasswordButton');
-    const eyeIconPath = document.getElementById('eyeIconPath');
-    const loginForm = document.getElementById("loginForm");
-    const errorMessage = document.getElementById("error-message");
-    const loginButton = document.getElementById("loginButton");
+            const loginContainer = document.querySelector('.login-container');
+            const emailInput = document.getElementById("email");
+            const passwordInput = document.getElementById("password");
+            const togglePasswordButton = document.getElementById('togglePasswordButton');
+            const eyeIconPath = document.getElementById('eyeIconPath');
+            const loginForm = document.getElementById("loginForm");
+            const errorMessage = document.getElementById("error-message");
+            const loginButton = document.getElementById("loginButton");
 
-    const eyeOpenPath = "M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z";
-    const eyeClosedPath = "M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75C21.27 9.11 17 6 12 6c-1.76 0-3.41.56-4.82 1.5l1.57 1.57c.55-.22 1.13-.37 1.75-.37zm-4.24 8.53l2.92 2.92C10.11 18.87 9.35 19 8.5 19c-3.87 0-7.36-3.58-8.5-5.5.77-1.92 2.13-3.52 3.78-4.58l2.25 2.25C6.03 11.5 6 11.74 6 12c0 1.66 1.34 3 3 3 .26 0 .5-.03.73-.08zM2.71 3.27L1.44 4.54l2.28 2.28C2.43 7.86 1.27 9.41 1 11c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l2.53 2.53 1.27-1.27L2.71 3.27z";
+            const eyeOpenPath = "M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z";
+            const eyeClosedPath = "M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75C21.27 9.11 17 6 12 6c-1.76 0-3.41.56-4.82 1.5l1.57 1.57c.55-.22 1.13-.37 1.75-.37zm-4.24 8.53l2.92 2.92C10.11 18.87 9.35 19 8.5 19c-3.87 0-7.36-3.58-8.5-5.5.77-1.92 2.13-3.52 3.78-4.58l2.25 2.25C6.03 11.5 6 11.74 6 12c0 1.66 1.34 3 3 3 .26 0 .5-.03.73-.08zM2.71 3.27L1.44 4.54l2.28 2.28C2.43 7.86 1.27 9.41 1 11c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l2.53 2.53 1.27-1.27L2.71 3.27z";
 
-    // Efectos visuales (se mantienen igual)
-    if (window.matchMedia('(pointer: fine)').matches) {
-        loginContainer.addEventListener('mousemove', (e) => {
-            const rect = loginContainer.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            const xAxis = (rect.width / 2 - x) / 20;
-            const yAxis = (rect.height / 2 - y) / -20;
-            loginContainer.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg) scale(1.03)`;
-            loginContainer.style.boxShadow = `0px ${yAxis * -2}px 30px rgba(0,0,0,0.2), ${xAxis * -2}px 0px 30px rgba(0,0,0,0.2)`;
-        });
+            if (window.matchMedia('(pointer: fine)').matches) {
+                loginContainer.addEventListener('mousemove', (e) => {
+                    const rect = loginContainer.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const xAxis = (rect.width / 2 - x) / 20; 
+                    const yAxis = (rect.height / 2 - y) / -20; 
+                    loginContainer.style.transform = `rotateY(<span class="math-inline">\{xAxis\}deg\) rotateX\(</span>{yAxis}deg) scale(1.03)`; 
+                    loginContainer.style.boxShadow = `0px ${yAxis * -2}px 30px rgba(0,0,0,0.2), ${xAxis * -2}px 0px 30px rgba(0,0,0,0.2)`;
+                });
 
-        loginContainer.addEventListener('mouseenter', () => {
-            loginContainer.style.transition = 'transform 0.1s linear, box-shadow 0.1s linear';
-        });
+                loginContainer.addEventListener('mouseenter', () => {
+                    loginContainer.style.transition = 'transform 0.1s linear, box-shadow 0.1s linear';
+                });
 
-        loginContainer.addEventListener('mouseleave', () => {
-            loginContainer.style.transition = 'transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.6s cubic-bezier(0.23, 1, 0.32, 1)';
-            loginContainer.style.transform = 'rotateY(0deg) rotateX(0deg) scale(1)';
-            loginContainer.style.boxShadow = 'var(--shadow-strong)';
-        });
-    }
-    
-    // Mostrar/ocultar contraseña
-    function togglePasswordVisibility() {
-        const isPasswordType = passwordInput.type === "password";
-        passwordInput.type = isPasswordType ? "text" : "password";
-        eyeIconPath.setAttribute('d', isPasswordType ? eyeClosedPath : eyeOpenPath);
-        togglePasswordButton.setAttribute('aria-pressed', (!isPasswordType).toString());
-        togglePasswordButton.setAttribute('aria-label', isPasswordType ? 'Ocultar contraseña' : 'Mostrar contraseña');
-    }
-    togglePasswordButton.addEventListener('click', togglePasswordVisibility);
+                loginContainer.addEventListener('mouseleave', () => {
+                    loginContainer.style.transition = 'transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.6s cubic-bezier(0.23, 1, 0.32, 1)';
+                    loginContainer.style.transform = 'rotateY(0deg) rotateX(0deg) scale(1)';
+                    loginContainer.style.boxShadow = 'var(--shadow-strong)'; 
+                });
+            }
+            
+            function togglePasswordVisibility() {
+                const isPasswordType = passwordInput.type === "password";
+                passwordInput.type = isPasswordType ? "text" : "password";
+                eyeIconPath.setAttribute('d', isPasswordType ? eyeClosedPath : eyeOpenPath);
+                
+                togglePasswordButton.setAttribute('aria-pressed', (!isPasswordType).toString());
+                togglePasswordButton.setAttribute('aria-label', isPasswordType ? 'Ocultar contraseña' : 'Mostrar contraseña');
+            }
+            togglePasswordButton.addEventListener('click', togglePasswordVisibility);
 
-    // Manejo del login (CORREGIDO)
-    loginForm.addEventListener("submit", async function(event) {
-        event.preventDefault();
-        errorMessage.style.display = "none";
-        errorMessage.textContent = "";
+            loginForm.addEventListener("submit", async function(event) {
+                event.preventDefault();
+                errorMessage.style.display = "none";
+                errorMessage.textContent = "";
 
-        const email = emailInput.value.trim();
-        const password = passwordInput.value;
+                const email = emailInput.value.trim();
+                const password = passwordInput.value;
 
-        // Validación básica
-        if (!email || !password) {
-            showError("Correo electrónico y contraseña son obligatorios.");
-            return;
-        }
+                if (!email || !password) {
+                    showError("Correo electrónico y contraseña son obligatorios.");
+                    if(!email) emailInput.focus(); else passwordInput.focus();
+                    triggerContainerShake();
+                    return;
+                }
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    showError("Por favor, introduce un correo electrónico válido.");
+                    emailInput.focus();
+                    triggerContainerShake();
+                    return;
+                }
+                if (password.length < 6) {
+                    showError("La contraseña debe tener al menos 6 caracteres.");
+                    passwordInput.focus();
+                    triggerContainerShake();
+                    return;
+                }
 
-        setLoadingButton(true);
+                setLoadingButton(true);
 
-        try {
-            const response = await fetch("/login", {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    correo: email,
-                    pass: password
-                }),
-                credentials: 'include'
+                try {
+                    const response = await fetch("/login", { 
+                        method: "POST",
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams({
+                            correo: email,
+                            pass: password
+                        })
+                    });
+                    
+                    const result = await response.json();
+
+                    if (result.success === true) {
+                        console.log("Paso 5: ¡Éxito! Redirigiendo INMEDIATAMENTE...");
+                        window.location.href = result.redirect; // ¡Redirección directa!
+                    } else {
+                        showError(result.message || "Error en el inicio de sesión. Intente de nuevo.");
+                        triggerContainerShake();
+                    }
+                } catch (error) {
+                    console.error("Error en la petición de login:", error);
+                    showError("Error de conexión. Por favor, intente más tarde.");
+                    triggerContainerShake();
+                } finally {
+                    setLoadingButton(false);
+                }
             });
 
-            const result = await response.json();
-
-            if (!response.ok) {
-                throw new Error(result.message || "Error en la solicitud");
+            function triggerContainerShake() {
+                loginContainer.classList.add('shake-animation');
+                setTimeout(() => loginContainer.classList.remove('shake-animation'), 600);
             }
 
-            if (result.success) {
-                console.log("Redirigiendo a:", result.redirect);
-                window.location.href = result.redirect;
-            } else {
-                showError(result.message || "Error en el inicio de sesión");
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.style.display = "block";
+                errorMessage.style.animation = 'none'; 
+                void errorMessage.offsetHeight; 
+                errorMessage.style.animation = 'shake 0.5s ease';
             }
-        } catch (error) {
-            console.error("Error en login:", error);
-            showError(error.message || "Error de conexión con el servidor");
-        } finally {
-            setLoadingButton(false);
-        }
-    });
+            
+            function setLoadingButton(isLoading) {
+                loginButton.disabled = isLoading;
+                loginButton.setAttribute('aria-busy', isLoading.toString());
+                loginButton.innerHTML = isLoading ? 
+                    `Iniciando
+                    <span class="loading-dots">
+                        <span>.</span><span>.</span><span>.</span>
+                    </span>` : 'Iniciar Sesión';
+                if (isLoading) {
+                    loginButton.style.background = 'var(--primary-color-dark)';
+                } else {
+                    loginButton.style.background = 'linear-gradient(90deg, var(--primary-color-dark), var(--primary-color))';
+                }
+            }
 
-    // Funciones auxiliares
-    function showError(message) {
-        errorMessage.textContent = message;
-        errorMessage.style.display = "block";
-        errorMessage.style.animation = 'none';
-        void errorMessage.offsetHeight;
-        errorMessage.style.animation = 'shake 0.5s ease';
-    }
+            loginButton.addEventListener('click', function(e) {
+                if (this.disabled) return;
+                if (!loginForm.checkValidity || loginForm.checkValidity()) { 
+                    const rect = e.target.getBoundingClientRect();
+                    const ripple = document.createElement('span');
+                    ripple.classList.add('ripple-effect'); 
+                    const size = Math.max(rect.width, rect.height);
+                    ripple.style.width = ripple.style.height = `${size}px`;
+                    ripple.style.left = `${e.clientX - rect.left - size / 2}px`;
+                    ripple.style.top = `${e.clientY - rect.top - size / 2}px`;
+                    this.appendChild(ripple);
+                    setTimeout(() => ripple.remove(), 600); 
+                }
+            });
 
-    function setLoadingButton(isLoading) {
-        loginButton.disabled = isLoading;
-        loginButton.innerHTML = isLoading ? 
-            `Iniciando<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span>` : 
-            'Iniciar Sesión';
-    }
-
-    // Efecto ripple en botón
-    loginButton.addEventListener('click', function(e) {
-        if (this.disabled) return;
-        
-        const rect = e.target.getBoundingClientRect();
-        const ripple = document.createElement('span');
-        ripple.classList.add('ripple-effect');
-        const size = Math.max(rect.width, rect.height);
-        ripple.style.width = ripple.style.height = `${size}px`;
-        ripple.style.left = `${e.clientX - rect.left - size / 2}px`;
-        ripple.style.top = `${e.clientY - rect.top - size / 2}px`;
-        this.appendChild(ripple);
-        setTimeout(() => ripple.remove(), 600);
-    });
-
-    // Efectos focus en inputs
-    document.querySelectorAll('.input-container input').forEach(input => {
-        input.addEventListener('focus', function() {
-            this.parentElement.classList.add('focused');
+            document.querySelectorAll('.input-container input').forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.classList.add('focused');
+                });
+                input.addEventListener('blur', function() {
+                    this.parentElement.classList.remove('focused');
+                });
+            });
         });
-        input.addEventListener('blur', function() {
-            this.parentElement.classList.remove('focused');
-        });
-    });
-});
+    </script>
+</body>
+</html>
