@@ -18,7 +18,7 @@
             --secondary-color: #FF6B6B; 
 
             --text-color-dark: #2C3E50; 
-            --text-color-medium: #566573; /* Color para texto secundario/subtítulos */
+            --text-color-medium: #566573;
             --text-color-light: #ffffff;
             
             --border-color-light: #D0D3D4;
@@ -39,13 +39,7 @@
             --shadow-medium: 0 15px 35px rgba(0, 0, 0, 0.15);
             --shadow-strong: 0 20px 40px rgba(0,0,0,0.2);
         }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: var(--font-family-base);
             background-image: var(--background-body); 
@@ -60,18 +54,11 @@
             perspective: 1200px; 
             overflow-x: hidden;
         }
-
         .visually-hidden {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            margin: -1px;
-            padding: 0;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            border: 0;
+            position: absolute; width: 1px; height: 1px;
+            margin: -1px; padding: 0; overflow: hidden;
+            clip: rect(0, 0, 0, 0); border: 0;
         }
-
         .login-container {
             background-color: var(--background-container);
             padding: 30px; 
@@ -88,69 +75,51 @@
             backdrop-filter: blur(10px); 
             border: 1px solid rgba(255, 255, 255, 0.2); 
         }
-
         .login-container img.logo {
             width: 75px; 
-            margin-bottom: 15px; /* Espacio ajustado debajo del logo */
+            margin-bottom: 15px;
             transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
             filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.15));
             position: relative;
             z-index: 1;
         }
-
-        .login-container:hover img.logo {
-            transform: scale(1.1) rotate(-3deg);
-        }
-
-        h2 { /* Título "Iniciar Sesión" */
+        .login-container:hover img.logo { transform: scale(1.1) rotate(-3deg); }
+        h2 {
             color: var(--text-color-dark);
-            margin-bottom: 8px;  /* Reducido para dar espacio al subtítulo */
-            font-size: 2rem;     /* Ligeramente más grande para más presencia */
+            margin-bottom: 8px;
+            font-size: 2rem;
             font-weight: 600; 
-            letter-spacing: 0.5px; /* Sutil espaciado entre letras */
+            letter-spacing: 0.5px;
             position: relative;
-            display: inline-block; /* Para que el ::after se ajuste al texto */
+            display: inline-block;
             z-index: 1;
         }
-
         h2::after {
-            content: '';
-            position: absolute;
-            bottom: -8px;      /* Más cerca del texto */
-            left: 50%;
+            content: ''; position: absolute;
+            bottom: -8px; left: 50%;
             transform: translateX(-50%);
-            width: 0;          /* Anima desde el centro */
-            height: 3px;       /* Ligeramente más delgado */
+            width: 0; height: 3px;
             background-color: var(--primary-color);
             border-radius: 1.5px; 
             transition: width 0.5s cubic-bezier(0.23, 1, 0.32, 1);
         }
-
-        .login-container:hover h2::after {
-            width: 65%; /* No tan ancho, para un look más refinado */
-        }
-
+        .login-container:hover h2::after { width: 65%; }
         .login-subtitle {
             font-size: 0.95rem;
-            color: var(--text-color-medium); /* Un color más suave para jerarquía */
-            margin-bottom: 28px; /* Espacio antes del primer campo de entrada */
+            color: var(--text-color-medium);
+            margin-bottom: 28px;
             font-weight: 400;
             line-height: 1.4;
             z-index: 1;
             position: relative; 
         }
-
         .input-container {
-            position: relative;
-            margin-bottom: 22px;
-            width: 100%;
-            transition: all 0.3s ease;
+            position: relative; margin-bottom: 22px;
+            width: 100%; transition: all 0.3s ease;
             z-index: 1;
         }
-
         .input-container input {
-            width: 100%;
-            padding: 14px 45px 14px 18px; 
+            width: 100%; padding: 14px 45px 14px 18px; 
             border: 1.5px solid var(--border-color-light); 
             border-radius: var(--border-radius-small);
             font-size: 1rem; 
@@ -160,126 +129,73 @@
             color: var(--text-color-medium);
             font-weight: 400;
         }
-        
-        .input-container input::placeholder {
-            color: #95A5A6; 
-            opacity: 1;
-        }
-
+        .input-container input::placeholder { color: #95A5A6; opacity: 1; }
         .input-container input:focus {
             border-color: var(--border-color-focus);
             box-shadow: 0 0 0 4px var(--primary-color-focus-shadow), inset 0 2px 4px rgba(0, 0, 0, 0.06);
-            outline: none;
-            transform: translateY(0); 
+            outline: none; transform: translateY(0); 
             background-color: #fff;
         }
-        
         .input-container.focused {
              box-shadow: 0 0 15px var(--primary-color-focus-shadow);
              border-radius: var(--border-radius-small); 
         }
-
         .input-icon {
-            position: absolute;
-            right: 18px; 
-            top: 50%;
+            position: absolute; right: 18px; top: 50%;
             transform: translateY(-50%);
             color: var(--primary-color-light); 
             font-size: 20px; 
             pointer-events: none;
             transition: all 0.3s ease;
         }
-        
-        .input-container input:focus + .input-icon {
-            color: var(--primary-color);
-        }
-
-        .input-icon svg {
-            width: 20px;
-            height: 20px;
-            fill: currentColor;
-        }
-
+        .input-container input:focus + .input-icon { color: var(--primary-color); }
+        .input-icon svg { width: 20px; height: 20px; fill: currentColor; }
         .toggle-password-button {
-            background: none;
-            border: none;
-            padding: 0;
-            margin: 0;
-            cursor: pointer;
-            position: absolute;
-            right: 15px;
-            top: 50%;
+            background: none; border: none;
+            padding: 0; margin: 0;
+            cursor: pointer; position: absolute;
+            right: 15px; top: 50%;
             transform: translateY(-50%);
             color: var(--text-color-medium); 
             transition: all 0.3s ease;
-            line-height: 0;
-            z-index: 2;
+            line-height: 0; z-index: 2;
         }
-
-        .toggle-password-button svg {
-            width: 24px; 
-            height: 24px;
-            fill: currentColor;
-        }
-
+        .toggle-password-button svg { width: 24px; height: 24px; fill: currentColor; }
         .toggle-password-button:hover,
         .toggle-password-button:focus {
             color: var(--primary-color); 
             transform: translateY(-50%) scale(1.1);
             outline: none;
         }
-
         .error-message {
-            color: var(--error-color);
-            font-size: 0.875rem; 
-            font-weight: 500;
-            display: none;
+            color: var(--error-color); font-size: 0.875rem; 
+            font-weight: 500; display: none;
             margin-bottom: 18px; 
             animation: shake 0.5s ease;
-            min-height: 22px;
-            z-index: 1;
-            position: relative;
-            text-align: left;
+            min-height: 22px; z-index: 1;
+            position: relative; text-align: left;
             padding-left: 5px;
         }
-
         button[type="submit"] {
-            width: 100%;
-            padding: 15px;
+            width: 100%; padding: 15px;
             background: linear-gradient(90deg, var(--primary-color-dark), var(--primary-color)); 
-            color: var(--text-color-light);
-            border: none;
+            color: var(--text-color-light); border: none;
             border-radius: var(--border-radius-small);
-            cursor: pointer;
-            font-size: 1.05rem; 
-            font-weight: 600;
-            margin-top: 15px;
+            cursor: pointer; font-size: 1.05rem; 
+            font-weight: 600; margin-top: 15px;
             transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
                         box-shadow 0.3s ease-out, 
                         background 0.3s ease-out;
-            position: relative; 
-            overflow: hidden;   
-            z-index: 1;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); 
+            position: relative; overflow: hidden;   
+            z-index: 1; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); 
         }
-
         button[type="submit"]::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%; 
-            width: 75%;  
-            height: 100%;
-            background: linear-gradient(
-                90deg, 
-                transparent, 
-                rgba(255, 255, 255, 0.25), 
-                transparent
-            );
+            content: ''; position: absolute; top: 0; left: -100%; 
+            width: 75%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
             transform: skewX(-25deg); 
             transition: left 0.75s cubic-bezier(0.23, 1, 0.32, 1); 
         }
-
         button[type="submit"]:hover,
         button[type="submit"]:focus {
             background: linear-gradient(90deg, var(--primary-color), var(--primary-color-light)); 
@@ -287,185 +203,88 @@
             box-shadow: 0 12px 28px var(--primary-color-hover-shadow); 
             outline: none;
         }
-        
         button[type="submit"]:hover::before,
-        button[type="submit"]:focus::before {
-            left: 125%; 
-        }
-
+        button[type="submit"]:focus::before { left: 125%; }
         button[type="submit"]:active {
             transform: translateY(-2px) scale(0.98); 
             box-shadow: 0 6px 15px var(--primary-color-hover-shadow);
         }
-        
         .ripple-effect { 
-            position: absolute;
-            border-radius: 50%;
+            position: absolute; border-radius: 50%;
             background-color: rgba(255, 255, 255, 0.6);
             transform: scale(0);
             animation: ripple 0.6s linear;
             pointer-events: none;
         }
-
-        @keyframes ripple {
-            to {
-                transform: scale(4);
-                opacity: 0;
-            }
-        }
-
+        @keyframes ripple { to { transform: scale(4); opacity: 0; } }
         .loading-dots span {
-            opacity: 0;
-            animation: blink 1.4s infinite both;
-            font-size: 1.5em;
-            line-height: 0;
+            opacity: 0; animation: blink 1.4s infinite both;
+            font-size: 1.5em; line-height: 0;
             color: var(--text-color-light); 
         }
-        .loading-dots span:nth-child(2) {
-            animation-delay: .2s;
-        }
-        .loading-dots span:nth-child(3) {
-            animation-delay: .4s;
-        }
+        .loading-dots span:nth-child(2) { animation-delay: .2s; }
+        .loading-dots span:nth-child(3) { animation-delay: .4s; }
         @keyframes blink {
             0%, 80%, 100% { opacity: 0; }
             40% { opacity: 1; }
         }
-
         .register-link {
-            display: block;
-            margin-top: 30px; 
-            text-decoration: none;
-            color: var(--primary-color);
-            font-size: 0.9rem; 
-            font-weight: 500;
-            position: relative;
-            transition: all 0.3s ease;
+            display: block; margin-top: 30px; 
+            text-decoration: none; color: var(--primary-color);
+            font-size: 0.9rem; font-weight: 500;
+            position: relative; transition: all 0.3s ease;
             z-index: 1;
         }
-
         .register-link::after {
-            content: '';
-            position: absolute;
-            bottom: -4px; 
-            left: 0;
-            width: 0;
-            height: 2px; 
+            content: ''; position: absolute; bottom: -4px; 
+            left: 0; width: 0; height: 2px; 
             background-color: var(--primary-color-dark);
             transition: width 0.35s ease;
         }
-
         .register-link:hover,
         .register-link:focus {
             text-decoration: none;
             color: var(--primary-color-dark);
             outline: none;
         }
-
         .register-link:hover::after,
-        .register-link:focus::after {
-            width: 100%;
-        }
-
+        .register-link:focus::after { width: 100%; }
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(25px) rotateX(8deg) scale(0.97);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) rotateX(0) scale(1);
-            }
+            from { opacity: 0; transform: translateY(25px) rotateX(8deg) scale(0.97); }
+            to { opacity: 1; transform: translateY(0) rotateX(0) scale(1); }
         }
-
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             10%, 30%, 50%, 70%, 90% { transform: translateX(-7px); } 
             20%, 40%, 60%, 80% { transform: translateX(7px); }
         }
-
         @keyframes pulse {
             0% { transform: scale(1); filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.15));}
             50% { transform: scale(1.07); filter: drop-shadow(0 5px 10px rgba(0,169,255,0.3));} 
             100% { transform: scale(1); filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.15));}
         }
-
-        .pulse-logo {
-            animation: pulse 2.5s infinite ease-in-out;
-        }
-        
-        .shake-animation {
-            animation: shake 0.5s ease forwards;
-        }
-
+        .pulse-logo { animation: pulse 2.5s infinite ease-in-out; }
+        .shake-animation { animation: shake 0.5s ease forwards; }
         @media (min-width: 768px) {
-            .login-container {
-                padding: 40px;
-                max-width: 450px;
-            }
-            
-            .login-container img.logo {
-                width: 85px;
-            }
-            
-            h2 {
-                font-size: 2.3rem;
-            }
-            .login-subtitle {
-                font-size: 1rem;
-                margin-bottom: 30px;
-            }
-            
-            .input-container input {
-                padding: 15px 50px 15px 20px;
-                font-size: 1.05rem;
-            }
-            button[type="submit"] {
-                padding: 18px; 
-                font-size: 1.1rem;
-            }
+            .login-container { padding: 40px; max-width: 450px; }
+            .login-container img.logo { width: 85px; }
+            h2 { font-size: 2.3rem; }
+            .login-subtitle { font-size: 1rem; margin-bottom: 30px; }
+            .input-container input { padding: 15px 50px 15px 20px; font-size: 1.05rem; }
+            button[type="submit"] { padding: 18px; font-size: 1.1rem; }
         }
-
         @media (max-width: 420px) { 
-            body {
-                padding: 15px;
-            }
-            
-            .login-container {
-                padding: 25px; 
-            }
-            
-            h2 {
-                font-size: 1.7rem;
-            }
-             .login-subtitle {
-                font-size: 0.9rem;
-                margin-bottom: 25px;
-            }
-            
-            .input-container input {
-                padding: 12px 40px 12px 15px;
-                font-size: 0.95rem;
-            }
-            
-            button[type="submit"] {
-                padding: 14px;
-                font-size: 1rem;
-            }
-            .toggle-password-button svg {
-                width: 22px;
-                height: 22px;
-            }
-            .input-icon svg {
-                 width: 18px;
-                 height: 18px;
-            }
+            body { padding: 15px; }
+            .login-container { padding: 25px; }
+            h2 { font-size: 1.7rem; }
+            .login-subtitle { font-size: 0.9rem; margin-bottom: 25px; }
+            .input-container input { padding: 12px 40px 12px 15px; font-size: 0.95rem; }
+            button[type="submit"] { padding: 14px; font-size: 1rem; }
+            .toggle-password-button svg { width: 22px; height: 22px; }
+            .input-icon svg { width: 18px; height: 18px; }
         }
-
         @supports (-webkit-touch-callout: none) {
-            .input-container input {
-                font-size: 16px; 
-            }
+            .input-container input { font-size: 16px; }
         }
     </style>
 </head>
@@ -550,8 +369,6 @@
 
             loginForm.addEventListener("submit", async function(event) {
                 event.preventDefault();
-                console.log("Paso 1: El formulario fue enviado. Empezando el proceso de login."); // <-- NUEVO LOG
-                
                 errorMessage.style.display = "none";
                 errorMessage.textContent = "";
 
@@ -580,7 +397,6 @@
                 setLoadingButton(true);
 
                 try {
-                    console.log("Paso 2: Enviando datos al servidor..."); // <-- NUEVO LOG
                     const response = await fetch("/login", { 
                         method: "POST",
                         headers: {
@@ -592,28 +408,17 @@
                         })
                     });
                     
-                    console.log("Paso 3: Respuesta recibida del servidor. Status:", response.status); // <-- NUEVO LOG
-
                     const result = await response.json();
-                    console.log("Paso 4: El servidor respondió con este JSON:", result); // <-- NUEVO LOG
 
                     if (result.success === true) {
-                        console.log("Paso 5: El resultado fue exitoso. Intentando redirigir..."); // <-- NUEVO LOG
-                        errorMessage.style.display = "none";
-                        loginContainer.style.transition = 'transform 0.4s ease, opacity 0.4s ease';
-                        loginContainer.style.transform = 'scale(0.90) translateY(10px)';
-                        loginContainer.style.opacity = '0';
-                        setTimeout(() => {
-                            console.log("Paso 6: Ejecutando la redirección ahora a:", result.redirect); // <-- NUEVO LOG
-                            window.location.href = result.redirect || "/dashboard";
-                        }, 400);
+                        console.log("Paso 5: ¡Éxito! Redirigiendo INMEDIATAMENTE...");
+                        window.location.href = result.redirect; // ¡Redirección directa!
                     } else {
-                        console.error("El servidor respondió que el login NO fue exitoso. Mensaje:", result.message); // <-- NUEVO LOG
                         showError(result.message || "Error en el inicio de sesión. Intente de nuevo.");
                         triggerContainerShake();
                     }
                 } catch (error) {
-                    console.error("Paso X: Ocurrió un error en el bloque try/catch:", error); // <-- NUEVO LOG
+                    console.error("Error en la petición de login:", error);
                     showError("Error de conexión. Por favor, intente más tarde.");
                     triggerContainerShake();
                 } finally {
