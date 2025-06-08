@@ -670,7 +670,7 @@
             const configureGrid = () => {
                 if (!container) return;
                 const gridColumns = window.innerWidth >= 992 ? 'repeat(3, 1fr)' : 
-                                      window.innerWidth >= 768 ? 'repeat(2, 1fr)' : '1fr';
+                                  window.innerWidth >= 768 ? 'repeat(2, 1fr)' : '1fr';
                 container.style.gridTemplateColumns = gridColumns;
             };
             configureGrid(); 
@@ -794,7 +794,7 @@
                     document.body.style.opacity = '0'; document.body.style.transform = 'translateY(15px)'; 
                     setTimeout(() => {
                         if (response.redirected) window.location.href = response.url;
-                        else window.location.href = '/index.html';
+                        else window.location.href = '/login';
                     }, 400); 
                 } catch (error) {
                     console.error('Error al cerrar sesión:', error);

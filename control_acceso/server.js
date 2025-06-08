@@ -7,7 +7,7 @@ const path = require("path");
 const bcrypt = require("bcrypt");
 const session = require("express-session");
 const cors = require("cors");
-const pgSession = require('connect-pg-simple')(session);
+const pgSession = require('connect-pg-simple')(session); // <-- AÑADIDO: Para sesiones en DB
 
 const app = express();
 
@@ -26,33 +26,30 @@ pool.connect((err) => {
 });
 
 // --- CONFIGURACIÓN DE MIDDLEWARE ---
-app.use(cors({
-    origin: true,
-    credentials: true
-}));
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
 
-// --- CONFIGURACIÓN DE SESIÓN PERSISTENTE ---
+// --- CONFIGURACIÓN DE SESIÓN PERSISTENTE (EL ARREGLO FINAL) ---
 app.use(session({
     store: new pgSession({
-      pool: pool,
-      tableName: 'session'
+      pool : pool,                // Pool de conexión existente
+      tableName : 'session'       // Nombre de la tabla para las sesiones (se crea sola)
     }),
-    secret: process.env.SESSION_SECRET || 'secret-key',
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: { 
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+        maxAge: 30 * 24 * 60 * 60 * 1000, // Sesión dura 30 días
+        secure: process.env.NODE_ENV === 'production'
     }
 }));
 
+
 // --- RUTAS DE LA APLICACIÓN ---
 
-// Middleware para proteger rutas
+// Middleware para proteger rutas que requieren autenticación
 function requireLogin(req, res, next) {
     if (!req.session.user) {
         return res.redirect('/index.html');
@@ -60,111 +57,138 @@ function requireLogin(req, res, next) {
     next();
 }
 
-// 1. PÁGINA DE INICIO
+// 1. PÁGINA DE INICIO -> Sirve el login (index.html)
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// 2. PÁGINA DE REGISTRO
+// 2. PÁGINA DE REGISTRO DE USUARIOS -> Sirve la página de registro
 app.get("/registro", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "registroUsuarios.html"));
 });
 
-// 3. PROCESO DE REGISTRO
+// 3. PROCESO DE REGISTRO DE USUARIO (POST)
 app.post("/registro", async (req, res) => {
     const { ced, nom, correo, pass } = req.body;
     if (!ced || !nom || !correo || !pass) {
         return res.status(400).json({ success: false, message: "Todos los campos son obligatorios." });
     }
 
+    const buscarQuery = "SELECT * FROM usuarios WHERE cedula = $1 OR correo = $2";
     try {
-        const { rows } = await pool.query(
-            "SELECT * FROM usuarios WHERE cedula = $1 OR correo = $2", 
-            [ced, correo]
-        );
-        
+        const { rows } = await pool.query(buscarQuery, [ced, correo]);
         if (rows.length > 0) {
             return res.status(409).json({ success: false, message: "La cédula o el correo ya existen." });
         }
 
         const hashedPassword = await bcrypt.hash(pass, 10);
-        await pool.query(
-            "INSERT INTO usuarios (cedula, nombre, correo, contrasena) VALUES ($1, $2, $3, $4)",
-            [ced, nom, correo, hashedPassword]
-        );
+        const registrarQuery = "INSERT INTO usuarios (cedula, nombre, correo, contrasena) VALUES ($1, $2, $3, $4)";
+        await pool.query(registrarQuery, [ced, nom, correo, hashedPassword]);
         
+        console.log("Registro exitoso.");
         return res.json({ success: true, redirect: "/index.html" });
     } catch (error) {
-        console.error("Error en registro:", error);
-        return res.status(500).json({ success: false, message: "Error en el servidor." });
+        console.error("Error en DB en /registro:", error);
+        return res.status(500).json({ success: false, message: "Error en la base de datos." });
     }
 });
 
-// 4. PROCESO DE LOGIN (CORREGIDO)
+// 4. PROCESO DE LOGIN (POST)
 app.post("/login", async (req, res) => {
     const { correo, pass } = req.body;
     if (!correo || !pass) {
         return res.status(400).json({ success: false, message: "Correo y contraseña son obligatorios." });
     }
 
+    const buscarQuery = "SELECT * FROM usuarios WHERE correo = $1";
     try {
-        const { rows } = await pool.query(
-            "SELECT * FROM usuarios WHERE correo = $1", 
-            [correo]
-        );
-        
+        const { rows } = await pool.query(buscarQuery, [correo]);
         if (rows.length === 0) {
             return res.status(404).json({ success: false, message: "Usuario no encontrado." });
         }
         
         const usuario = rows[0];
-        const match = await bcrypt.compare(pass, usuario.contrasena);
+        // Quitar la contraseña del objeto de usuario antes de guardarla en la sesión
+        const { contrasena, ...usuarioSinPass } = usuario;
+        
+        const match = await bcrypt.compare(pass, contrasena);
         
         if (!match) {
             return res.status(401).json({ success: false, message: "Contraseña incorrecta." });
         }
 
-        const { contrasena, ...usuarioSinPass } = usuario;
-        req.session.user = usuarioSinPass;
+        req.session.user = usuarioSinPass; // Guardar usuario (sin contraseña) en la sesión persistente
         
         req.session.save(err => {
-            if(err) {
-                console.error("Error al guardar sesión:", err);
+            if(err){
+                console.error("Error al guardar la sesión:", err);
                 return res.status(500).json({ success: false, message: "Error al iniciar sesión."});
             }
-            return res.json({ 
-                success: true, 
-                redirect: "/dashboard",
-                user: usuarioSinPass
-            });
+            console.log("Inicio de sesión exitoso y sesión guardada.");
+            return res.json({ success: true, redirect: "/dashboard" });
         });
+
     } catch (error) {
-        console.error("Error en login:", error);
-        return res.status(500).json({ success: false, message: "Error en el servidor." });
+        console.error("Error en DB en /login:", error);
+        return res.status(500).json({ success: false, message: "Error en la base de datos." });
     }
 });
 
-// 5. DASHBOARD (CORREGIDO)
+// 5. PÁGINA PRINCIPAL (DASHBOARD)
 app.get("/dashboard", requireLogin, (req, res) => {
     res.sendFile(path.join(__dirname, "public", "paginaPrincipal.html"));
 });
 
-// 6. LOGOUT (CORREGIDO)
+// 6. CERRAR SESIÓN (LOGOUT)
 app.post("/logout", (req, res) => {
     req.session.destroy((err) => {
         if (err) {
-            console.error("Error al cerrar sesión:", err);
+            console.error("Error al cerrar la sesión:", err);
             return res.status(500).send("No se pudo cerrar la sesión.");
         }
-        res.json({ success: true, redirect: "/" });
+        res.redirect("/index.html");
     });
 });
 
 // 7. RUTAS DE DISPOSITIVOS
-const dispositivosRouter = require('./routes/dispositivos');
-app.use(dispositivosRouter);
+app.get("/dispositivos", requireLogin, (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "registroDispositivos.html"));
+});
 
-// --- INICIAR SERVIDOR ---
+app.post("/registrarDispositivo", requireLogin, async (req, res) => {
+    const { tipo, marca, modelo, direccion_ip, puerto, usuario, contrasena, ubicacion } = req.body;
+    if (!tipo || !marca || !modelo || !ubicacion) {
+        return res.status(400).json({ success: false, message: "Campos obligatorios faltantes." });
+    }
+    const query = "INSERT INTO dispositivos (tipo, marca, modelo, direccion_ip, puerto, usuario, contrasena, ubicacion, usuario_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)";
+    const parametros = [tipo, marca, modelo, direccion_ip || null, puerto || null, usuario || null, contrasena || null, ubicacion, req.session.user.id];
+    try {
+        await pool.query(query, parametros);
+        res.json({ success: true, message: "Dispositivo registrado correctamente." });
+    } catch (error) {
+        console.error("Error al registrar el dispositivo:", error);
+        return res.status(500).json({ success: false, message: "Error al registrar el dispositivo." });
+    }
+});
+
+// 8. RUTAS DE SERVICIOS
+app.get("/servicios", requireLogin, (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "registroServicios.html"));
+});
+
+app.post("/registrarServicio", requireLogin, async (req, res) => {
+    const { nombre, descripcion, estado } = req.body;
+    const query = "INSERT INTO servicios (nombre, descripcion, estado) VALUES ($1, $2, $3)";
+    try {
+        await pool.query(query, [nombre, descripcion, estado]);
+        res.json({ success: true, message: "Servicio registrado con éxito" });
+    } catch (error) {
+        console.error("Error al registrar servicio:", error);
+        return res.status(500).json({ success: false, message: "Error al registrar el servicio" });
+    }
+});
+
+// --- INICIAR EL SERVIDOR ---
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en el puerto ${PORT}`);
