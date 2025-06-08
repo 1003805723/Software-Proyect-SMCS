@@ -2,43 +2,19 @@
 require('dotenv').config(); 
 
 const express = require("express");
-const { Pool } = require('pg'); // <--- 1. CAMBIO: Usamos el driver de PostgreSQL
+const { Pool } = require('pg');
 const path = require("path");
 const bcrypt = require("bcrypt");
 const session = require("express-session");
 const cors = require("cors");
+const pgSession = require('connect-pg-simple')(session); // <-- AÑADIDO: Para sesiones en DB
 
 const app = express();
 
-// --- CONFIGURACIÓN DE MIDDLEWARE ---
-app.use(cors());
-app.use(session({
-    secret: process.env.SESSION_SECRET || "una_clave_secreta_por_defecto_muy_larga",
-    resave: false,
-    saveUninitialized: false, // Mejor para la eficiencia
-    cookie: { secure: process.env.NODE_ENV === 'production' } // Poner en `true` si usas HTTPS
-}));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(express.static(path.join(__dirname, "public")));
-
-// --- CONEXIÓN A LA BASE DE DATOS POSTGRESQL (VERSIÓN FINAL) ---
-
-// ----- LÍNEAS DE DEPURACIÓN PARA ENCONTRAR EL ERROR -----
-console.log("--- INICIANDO DEPURACIÓN DE VARIABLES DE ENTORNO ---");
-console.log("Valor de DATABASE_URL recibido por el servidor:", process.env.DATABASE_URL);
-console.log("Valor de NODE_ENV recibido por el servidor:", process.env.NODE_ENV);
-console.log("--- FIN DE LA DEPURACIÓN ---");
-// ----------------------------------------------------
-
-// Definimos la configuración de SSL de forma condicional
-const sslConfig = process.env.NODE_ENV === 'production' 
-    ? { rejectUnauthorized: false } 
-    : false;
-
+// --- CONEXIÓN A LA BASE DE DATOS POSTGRESQL ---
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: sslConfig
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
 pool.connect((err) => {
@@ -48,6 +24,27 @@ pool.connect((err) => {
     }
     console.log("Conectado a la base de datos PostgreSQL");
 });
+
+// --- CONFIGURACIÓN DE MIDDLEWARE ---
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(express.static(path.join(__dirname, "public")));
+
+// --- CONFIGURACIÓN DE SESIÓN PERSISTENTE (EL ARREGLO FINAL) ---
+app.use(session({
+    store: new pgSession({
+      pool : pool,                // Pool de conexión existente
+      tableName : 'session'       // Nombre de la tabla para las sesiones (se crea sola)
+    }),
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: { 
+        maxAge: 30 * 24 * 60 * 60 * 1000, // Sesión dura 30 días
+        secure: process.env.NODE_ENV === 'production'
+    }
+}));
 
 
 // --- RUTAS DE LA APLICACIÓN ---
@@ -77,7 +74,6 @@ app.post("/registro", async (req, res) => {
         return res.status(400).json({ success: false, message: "Todos los campos son obligatorios." });
     }
 
-    // <--- 2. CAMBIO: Sintaxis de consulta para PostgreSQL ($1, $2)
     const buscarQuery = "SELECT * FROM usuarios WHERE cedula = $1 OR correo = $2";
     try {
         const { rows } = await pool.query(buscarQuery, [ced, correo]);
@@ -112,15 +108,26 @@ app.post("/login", async (req, res) => {
         }
         
         const usuario = rows[0];
-        const match = await bcrypt.compare(pass, usuario.contrasena); // <--- CAMBIO: `contrasenia` a `contrasena`
+        // Quitar la contraseña del objeto de usuario antes de guardarla en la sesión
+        const { contrasena, ...usuarioSinPass } = usuario;
+        
+        const match = await bcrypt.compare(pass, contrasena);
         
         if (!match) {
             return res.status(401).json({ success: false, message: "Contraseña incorrecta." });
         }
 
-        req.session.user = usuario;
-        console.log("Inicio de sesión exitoso.");
-        return res.json({ success: true, redirect: "/dashboard" });
+        req.session.user = usuarioSinPass; // Guardar usuario (sin contraseña) en la sesión persistente
+        
+        req.session.save(err => {
+            if(err){
+                console.error("Error al guardar la sesión:", err);
+                return res.status(500).json({ success: false, message: "Error al iniciar sesión."});
+            }
+            console.log("Inicio de sesión exitoso y sesión guardada.");
+            return res.json({ success: true, redirect: "/dashboard" });
+        });
+
     } catch (error) {
         console.error("Error en DB en /login:", error);
         return res.status(500).json({ success: false, message: "Error en la base de datos." });
@@ -136,6 +143,7 @@ app.get("/dashboard", requireLogin, (req, res) => {
 app.post("/logout", (req, res) => {
     req.session.destroy((err) => {
         if (err) {
+            console.error("Error al cerrar la sesión:", err);
             return res.status(500).send("No se pudo cerrar la sesión.");
         }
         res.redirect("/index.html");
