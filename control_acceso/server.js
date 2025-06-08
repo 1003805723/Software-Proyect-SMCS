@@ -22,12 +22,16 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
 
-// --- CONEXIÓN A LA BASE DE DATOS POSTGRESQL ---
+// --- CONEXIÓN A LA BASE DE DATOS POSTGRESQL (VERSIÓN FINAL) ---
+
+// Definimos la configuración de SSL de forma condicional
+const sslConfig = process.env.NODE_ENV === 'production' 
+    ? { rejectUnauthorized: false } 
+    : false;
+
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL, // Render/Railway te darán esta variable
-    ssl: {
-      rejectUnauthorized: false // Requerido para conexiones en la nube
-    }
+    connectionString: process.env.DATABASE_URL,
+    ssl: sslConfig
 });
 
 pool.connect((err) => {
