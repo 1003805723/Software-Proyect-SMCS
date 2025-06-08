@@ -24,6 +24,13 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // --- CONEXIÓN A LA BASE DE DATOS POSTGRESQL (VERSIÓN FINAL) ---
 
+// ----- LÍNEAS DE DEPURACIÓN PARA ENCONTRAR EL ERROR -----
+console.log("--- INICIANDO DEPURACIÓN DE VARIABLES DE ENTORNO ---");
+console.log("Valor de DATABASE_URL recibido por el servidor:", process.env.DATABASE_URL);
+console.log("Valor de NODE_ENV recibido por el servidor:", process.env.NODE_ENV);
+console.log("--- FIN DE LA DEPURACIÓN ---");
+// ----------------------------------------------------
+
 // Definimos la configuración de SSL de forma condicional
 const sslConfig = process.env.NODE_ENV === 'production' 
     ? { rejectUnauthorized: false } 
@@ -41,6 +48,7 @@ pool.connect((err) => {
     }
     console.log("Conectado a la base de datos PostgreSQL");
 });
+
 
 // --- RUTAS DE LA APLICACIÓN ---
 
