@@ -126,12 +126,10 @@
             transition: width 0.5s cubic-bezier(0.23, 1, 0.32, 1);
         }
 
-        /* La animación del ::after se activa al hacer hover sobre el contenedor */
         .login-container:hover h2::after {
             width: 65%; /* No tan ancho, para un look más refinado */
         }
 
-        /* Estilo para el nuevo subtítulo */
         .login-subtitle {
             font-size: 0.95rem;
             color: var(--text-color-medium); /* Un color más suave para jerarquía */
@@ -142,10 +140,9 @@
             position: relative; 
         }
 
-
         .input-container {
             position: relative;
-            margin-bottom: 22px; /* Se mantiene, el espacio superior lo da el subtítulo */
+            margin-bottom: 22px;
             width: 100%;
             transition: all 0.3s ease;
             z-index: 1;
@@ -181,7 +178,6 @@
              box-shadow: 0 0 15px var(--primary-color-focus-shadow);
              border-radius: var(--border-radius-small); 
         }
-
 
         .input-icon {
             position: absolute;
@@ -413,10 +409,10 @@
             }
             
             h2 {
-                font-size: 2.3rem; /* Título más grande en pantallas grandes */
+                font-size: 2.3rem;
             }
             .login-subtitle {
-                font-size: 1rem;   /* Subtítulo ligeramente más grande también */
+                font-size: 1rem;
                 margin-bottom: 30px;
             }
             
@@ -440,7 +436,7 @@
             }
             
             h2 {
-                font-size: 1.7rem; /* Ajuste para mejor lectura */
+                font-size: 1.7rem;
             }
              .login-subtitle {
                 font-size: 0.9rem;
@@ -507,7 +503,6 @@
     </div>
 
     <script>
-        // El script de JavaScript permanece igual.
         document.addEventListener('DOMContentLoaded', function() {
             const loginContainer = document.querySelector('.login-container');
             const emailInput = document.getElementById("email");
@@ -528,7 +523,7 @@
                     const y = e.clientY - rect.top;
                     const xAxis = (rect.width / 2 - x) / 20; 
                     const yAxis = (rect.height / 2 - y) / -20; 
-                    loginContainer.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg) scale(1.03)`; 
+                    loginContainer.style.transform = `rotateY(<span class="math-inline">\{xAxis\}deg\) rotateX\(</span>{yAxis}deg) scale(1.03)`; 
                     loginContainer.style.boxShadow = `0px ${yAxis * -2}px 30px rgba(0,0,0,0.2), ${xAxis * -2}px 0px 30px rgba(0,0,0,0.2)`;
                 });
 
@@ -555,6 +550,8 @@
 
             loginForm.addEventListener("submit", async function(event) {
                 event.preventDefault();
+                console.log("Paso 1: El formulario fue enviado. Empezando el proceso de login."); // <-- NUEVO LOG
+                
                 errorMessage.style.display = "none";
                 errorMessage.textContent = "";
 
@@ -583,6 +580,7 @@
                 setLoadingButton(true);
 
                 try {
+                    console.log("Paso 2: Enviando datos al servidor..."); // <-- NUEVO LOG
                     const response = await fetch("/login", { 
                         method: "POST",
                         headers: {
@@ -593,23 +591,29 @@
                             pass: password
                         })
                     });
+                    
+                    console.log("Paso 3: Respuesta recibida del servidor. Status:", response.status); // <-- NUEVO LOG
 
                     const result = await response.json();
+                    console.log("Paso 4: El servidor respondió con este JSON:", result); // <-- NUEVO LOG
 
-                    if (result.success) {
+                    if (result.success === true) {
+                        console.log("Paso 5: El resultado fue exitoso. Intentando redirigir..."); // <-- NUEVO LOG
                         errorMessage.style.display = "none";
                         loginContainer.style.transition = 'transform 0.4s ease, opacity 0.4s ease';
                         loginContainer.style.transform = 'scale(0.90) translateY(10px)';
                         loginContainer.style.opacity = '0';
                         setTimeout(() => {
+                            console.log("Paso 6: Ejecutando la redirección ahora a:", result.redirect); // <-- NUEVO LOG
                             window.location.href = result.redirect || "/dashboard";
                         }, 400);
                     } else {
+                        console.error("El servidor respondió que el login NO fue exitoso. Mensaje:", result.message); // <-- NUEVO LOG
                         showError(result.message || "Error en el inicio de sesión. Intente de nuevo.");
                         triggerContainerShake();
                     }
                 } catch (error) {
-                    console.error("Error en la petición de login:", error);
+                    console.error("Paso X: Ocurrió un error en el bloque try/catch:", error); // <-- NUEVO LOG
                     showError("Error de conexión. Por favor, intente más tarde.");
                     triggerContainerShake();
                 } finally {
