@@ -96,6 +96,7 @@ app.post("/registro", async (req, res) => {
 // 4. PROCESO DE LOGIN (POST)
 app.post("/login", async (req, res) => {
     const { correo, pass } = req.body;
+    console.log('paso 1');
     if (!correo || !pass) {
         return res.status(400).json({ success: false, message: "Correo y contraseña son obligatorios." });
     }
