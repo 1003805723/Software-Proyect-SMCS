@@ -96,7 +96,7 @@ app.post("/registro", async (req, res) => {
 // 4. PROCESO DE LOGIN (POST)
 app.post("/login", async (req, res) => {
     const { correo, pass } = req.body;
-    console.log('paso 1');
+    
     if (!correo || !pass) {
         return res.status(400).json({ success: false, message: "Correo y contraseña son obligatorios." });
     }
@@ -112,13 +112,12 @@ app.post("/login", async (req, res) => {
         // Quitar la contraseña del objeto de usuario antes de guardarla en la sesión
         const { contrasena, ...usuarioSinPass } = usuario;
         
-        console.log('contraseña digitada'+pass);
-        console.log('contraseña bd'+contrasena);
-
+        
         const match = await bcrypt.compare(pass, contrasena);
         
         if (!match) {
-            return res.status(401).json({ success: false, message: "Contraseña incorrecta." });
+            return res.status(401).json({ success: false, message: "Contraseña incorrecta.  bd="+contrasena+" digitada="+pass });
+            //return res.status(401).json({ success: false, message: "Contraseña incorrecta." });
         }
 
         req.session.user = usuarioSinPass; // Guardar usuario (sin contraseña) en la sesión persistente
