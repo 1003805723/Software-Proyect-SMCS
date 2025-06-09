@@ -7,7 +7,7 @@ const path = require("path");
 const bcrypt = require("bcrypt");
 const session = require("express-session");
 const cors = require("cors");
-const pgSession = require('connect-pg-simple')(session);
+const pgSession = require('connect-pg-simple')(session); // Para sesiones en DB
 
 const app = express();
 
@@ -37,8 +37,8 @@ app.set('trust proxy', 1);
 // --- CONFIGURACIÓN DE SESIÓN PERSISTENTE Y SEGURA PARA PRODUCCIÓN ---
 app.use(session({
     store: new pgSession({
-      pool : pool,
-      tableName : 'session'
+      pool : pool,                // Pool de conexión existente
+      tableName : 'session'       // Nombre de la tabla para las sesiones
     }),
     secret: process.env.SESSION_SECRET,
     resave: false,
@@ -56,9 +56,6 @@ app.use(session({
 app.use(express.static(path.join(__dirname, "public")));
 
 // --- RUTAS DE LA APLICACIÓN ---
-// (El resto de tus rutas /login, /registro, /dashboard, etc. se quedan exactamente igual)
-// ... PEGA AQUÍ TODAS TUS RUTAS DESDE app.get("/") HASTA EL FINAL ...
-// ... (omito el resto para no hacer el mensaje tan largo, pero debes tenerlas todas)
 
 // Middleware para proteger rutas que requieren autenticación
 function requireLogin(req, res, next) {
