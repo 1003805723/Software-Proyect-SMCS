@@ -112,7 +112,8 @@ app.post("/login", async (req, res) => {
         // Quitar la contraseña del objeto de usuario antes de guardarla en la sesión
         const { contrasena, ...usuarioSinPass } = usuario;
         
-        let password = await bcrypt.hash(pass, 10);
+        let password = bcrypt.hash(pass, 10);
+        
         const match = await bcrypt.compare(password, contrasena);
         
         if (!match) {
