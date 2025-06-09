@@ -7,7 +7,7 @@ const path = require("path");
 const bcrypt = require("bcrypt");
 const session = require("express-session");
 const cors = require("cors");
-const pgSession = require('connect-pg-simple')(session); // <-- AÑADIDO: Para sesiones en DB
+const pgSession = require('connect-pg-simple')(session);
 
 const app = express();
 
@@ -29,25 +29,36 @@ pool.connect((err) => {
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(express.static(path.join(__dirname, "public")));
 
-// --- CONFIGURACIÓN DE SESIÓN PERSISTENTE (EL ARREGLO FINAL) ---
+// *** INICIO DE LA MODIFICACIÓN IMPORTANTE ***
+// Esto es para que express-session confíe en el proxy de Railway
+app.set('trust proxy', 1); 
+
+// --- CONFIGURACIÓN DE SESIÓN PERSISTENTE Y SEGURA PARA PRODUCCIÓN ---
 app.use(session({
     store: new pgSession({
-      pool : pool,                // Pool de conexión existente
-      tableName : 'session'       // Nombre de la tabla para las sesiones (se crea sola)
+      pool : pool,
+      tableName : 'session'
     }),
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: { 
-        maxAge: 30 * 24 * 60 * 60 * 1000, // Sesión dura 30 días
-        secure: process.env.NODE_ENV === 'production'
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 días
+        secure: process.env.NODE_ENV === 'production', // Solo https en producción
+        httpOnly: true, // Previene acceso desde JS en el cliente
+        sameSite: 'lax' // Configuración de seguridad moderna
     }
 }));
+// *** FIN DE LA MODIFICACIÓN IMPORTANTE ***
 
+// Servir archivos estáticos DESPUÉS de la sesión
+app.use(express.static(path.join(__dirname, "public")));
 
 // --- RUTAS DE LA APLICACIÓN ---
+// (El resto de tus rutas /login, /registro, /dashboard, etc. se quedan exactamente igual)
+// ... PEGA AQUÍ TODAS TUS RUTAS DESDE app.get("/") HASTA EL FINAL ...
+// ... (omito el resto para no hacer el mensaje tan largo, pero debes tenerlas todas)
 
 // Middleware para proteger rutas que requieren autenticación
 function requireLogin(req, res, next) {
@@ -108,7 +119,6 @@ app.post("/login", async (req, res) => {
         }
         
         const usuario = rows[0];
-        // Quitar la contraseña del objeto de usuario antes de guardarla en la sesión
         const { contrasena, ...usuarioSinPass } = usuario;
         
         const match = await bcrypt.compare(pass, contrasena);
@@ -117,7 +127,7 @@ app.post("/login", async (req, res) => {
             return res.status(401).json({ success: false, message: "Contraseña incorrecta." });
         }
 
-        req.session.user = usuarioSinPass; // Guardar usuario (sin contraseña) en la sesión persistente
+        req.session.user = usuarioSinPass;
         
         req.session.save(err => {
             if(err){
@@ -187,6 +197,7 @@ app.post("/registrarServicio", requireLogin, async (req, res) => {
         return res.status(500).json({ success: false, message: "Error al registrar el servicio" });
     }
 });
+
 
 // --- INICIAR EL SERVIDOR ---
 const PORT = process.env.PORT || 3000;
