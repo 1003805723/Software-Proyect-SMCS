@@ -4,33 +4,103 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nueva Contraseña - SMCS</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Poppins', sans-serif; background-image: url('fondo.jpg'); background-size: cover; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { background: rgba(255, 255, 255, 0.95); padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 90%; max-width: 400px; }
-        h2 { color: #2c3e50; margin-bottom: 25px; }
-        input { width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; }
-        button { width: 100%; padding: 12px; border: none; border-radius: 8px; background-color: #00A9FF; color: white; font-size: 1rem; cursor: pointer; transition: background-color 0.3s; }
-        button:hover { background-color: #007DD1; }
-        .message { margin-top: 20px; font-weight: 500; }
-        .success { color: #2ecc71; }
-        .error { color: #e74c3c; }
-        #login-link { display: none; margin-top: 15px; }
+        :root {
+            --primary-color: #00A9FF; 
+            --primary-color-dark: #007DD1;
+            --primary-color-light: #66D2FF;
+            --primary-color-focus-shadow: rgba(0, 169, 255, 0.25);
+            --secondary-color: #FF6B6B; 
+            --text-color-dark: #2C3E50; 
+            --text-color-medium: #566573;
+            --text-color-light: #ffffff;
+            --border-color-light: #D0D3D4;
+            --error-color: #721c24;
+            --success-color: #155724;
+            --background-image: url('fondo.jpg'); 
+            --background-container: rgba(255, 255, 255, 0.85); 
+            --background-input: rgba(255, 255, 255, 0.9);
+            --font-family-base: 'Poppins', 'Arial', sans-serif;
+            --border-radius-small: 8px; 
+            --border-radius-medium: 12px;
+            --shadow-strong: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: var(--font-family-base);
+            background-image: url('fondo.jpg');
+            background-size: cover; background-position: center; background-attachment: fixed;            
+            min-height: 100vh; display: flex;
+            justify-content: center; align-items: center; padding: 20px;
+        }
+        .login-container {
+            background-color: var(--background-container);
+            padding: 30px; border-radius: var(--border-radius-medium);
+            box-shadow: var(--shadow-strong); text-align: center;
+            width: 100%; max-width: 400px; 
+            animation: fadeIn 0.9s ease-out forwards;
+            backdrop-filter: blur(10px); 
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(25px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h2 { color: var(--text-color-dark); margin-bottom: 25px; font-size: 1.8rem; font-weight: 600; }
+        .input-container { position: relative; margin-bottom: 22px; }
+        input[type="password"] {
+            width: 100%; padding: 14px 18px; 
+            border: 1.5px solid var(--border-color-light); 
+            border-radius: var(--border-radius-small);
+            font-size: 1rem; 
+            background-color: var(--background-input);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+            color: var(--text-color-medium);
+        }
+        input[type="password"]:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px var(--primary-color-focus-shadow);
+            outline: none;
+        }
+        button {
+            width: 100%; padding: 15px;
+            background: linear-gradient(90deg, var(--primary-color-dark), var(--primary-color)); 
+            color: var(--text-color-light); border: none;
+            border-radius: var(--border-radius-small);
+            cursor: pointer; font-size: 1.05rem; 
+            font-weight: 600; margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 169, 255, 0.3);
+        }
+        .message { margin-top: 20px; font-weight: 500; padding: 10px; border-radius: 8px;}
+        .success { color: var(--success-color); background-color: #d4edda; border: 1px solid #c3e6cb;}
+        .error { color: var(--error-color); background-color: #f8d7da; border: 1px solid #f5c6cb;}
+        #login-link { 
+            display: none; margin-top: 20px; text-decoration: none; 
+            color: var(--primary-color-dark); font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        #login-link:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="login-container">
         <h2>Ingresa tu Nueva Contraseña</h2>
         <form id="resetForm">
-            <input type="password" id="password" placeholder="Nueva contraseña" required>
+            <div class="input-container">
+                <input type="password" id="password" placeholder="Nueva contraseña" required>
+            </div>
             <input type="hidden" id="token">
             <button type="submit">Actualizar Contraseña</button>
         </form>
-        <div id="message" class="message"></div>
+        <div id="message" class="message" style="display: none;"></div>
         <a href="/index.html" id="login-link">Ir a Iniciar Sesión</a>
     </div>
     <script>
-        // Al cargar la página, captura el token de la URL y lo pone en el campo oculto
         document.addEventListener('DOMContentLoaded', () => {
             const token = window.location.pathname.split('/').pop();
             document.getElementById('token').value = token;
@@ -42,6 +112,8 @@
             const token = document.getElementById('token').value;
             const messageDiv = document.getElementById('message');
             const loginLink = document.getElementById('login-link');
+            
+            messageDiv.style.display = 'none';
             messageDiv.textContent = '';
 
             try {
@@ -54,15 +126,16 @@
                 
                 messageDiv.className = result.success ? 'message success' : 'message error';
                 messageDiv.textContent = result.message;
+                messageDiv.style.display = 'block';
 
                 if(result.success) {
-                    document.getElementById('resetForm').style.display = 'none'; // Oculta el formulario
-                    loginLink.style.display = 'inline-block'; // Muestra el enlace a login
+                    document.getElementById('resetForm').style.display = 'none';
+                    loginLink.style.display = 'inline-block';
                 }
-
             } catch (error) {
                 messageDiv.className = 'message error';
                 messageDiv.textContent = 'Error de conexión. Inténtalo de nuevo.';
+                messageDiv.style.display = 'block';
             }
         });
     </script>
