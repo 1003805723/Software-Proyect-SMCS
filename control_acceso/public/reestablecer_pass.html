@@ -16,7 +16,8 @@
             --text-color-medium: #566573;
             --text-color-light: #ffffff;
             --border-color-light: #D0D3D4;
-            --error-color: var(--secondary-color); 
+            --error-color: #721c24;
+            --success-color: #155724;
             --background-body: url('fondo.jpg'); 
             --background-container: rgba(255, 255, 255, 0.85); 
             --background-input: rgba(255, 255, 255, 0.9);
@@ -33,7 +34,7 @@
             min-height: 100vh; display: flex;
             justify-content: center; align-items: center; padding: 20px;
         }
-        .login-container { /* Renombrado de .container a .login-container */
+        .login-container {
             background-color: var(--background-container);
             padding: 30px; border-radius: var(--border-radius-medium);
             box-shadow: var(--shadow-strong); text-align: center;
@@ -76,9 +77,13 @@
             box-shadow: 0 8px 15px rgba(0, 169, 255, 0.3);
         }
         .message { margin-top: 20px; font-weight: 500; padding: 10px; border-radius: 8px;}
-        .success { color: #155724; background-color: #d4edda; border: 1px solid #c3e6cb;}
-        .error { color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb;}
-        #login-link { display: none; margin-top: 20px; text-decoration: none; color: var(--primary-color); font-weight: 500; }
+        .success { color: var(--success-color); background-color: #d4edda; border: 1px solid #c3e6cb;}
+        .error { color: var(--error-color); background-color: #f8d7da; border: 1px solid #f5c6cb;}
+        #login-link { 
+            display: none; margin-top: 20px; text-decoration: none; 
+            color: var(--primary-color-dark); font-weight: 500;
+            transition: all 0.3s ease;
+        }
         #login-link:hover { text-decoration: underline; }
     </style>
 </head>
